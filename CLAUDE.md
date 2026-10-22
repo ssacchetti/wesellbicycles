@@ -1,128 +1,129 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code when working with code in this repository.
+> **Read `HANDOFF.md` first** for where the project is and what's next. This folder is a
+> disconnected copy of `~/Developer/webuybicycles` (**never modify that one** – it's the live
+> buy-only site). No git remote, no Vercel link.
 
 ## What this is
 
-Single-page marketing site for **We Buy Bicycles**, a Melbourne + Geelong cash-for-used-road-bikes
-business. No backend: the "form submission" is a client-side WhatsApp deep link
-(`components/SellForm.tsx`), nothing is persisted, nothing is fetched. Confirmed: no database, no
-ORM, no `app/api/` routes, no auth, no test suite, no environment variables, no `vercel.json`.
+**We Sell Bicycles** – a multi-page shop for used road bikes and parts (Melbourne + Geelong),
+with the original "We Buy Bicycles" cash-for-bikes site living on as the `/we-buy` page.
 
-Stack: **Next.js 14.2.35 (App Router) · React 18.3.1 · TypeScript 5.6.3 · Tailwind CSS 3.4.15**,
-npm (not pnpm/yarn — `package-lock.json` is the lockfile), deployed on Vercel, domain at GoDaddy.
+It is currently a **front-end mockup**: real pages and interactions, **mock data**. The shop
+reads from `lib/catalogue.ts` through `lib/shop.ts`; Shopify (Storefront API + hosted checkout)
+is the planned backend but is **not wired up**. Checkout is an on-brand mock that takes no
+payment. Still no database, no API routes, no auth, no env vars, no tests.
+
+Stack: **Next.js 16.4 (App Router) · React 19 · TypeScript 5 · Tailwind CSS 4.3**, npm.
+Every route is statically prerendered (product pages via `generateStaticParams`).
 
 ## Commands
 
 ```bash
-npm run dev     # local dev server, http://localhost:3000
-npm run build   # production build — every route is statically prerendered
-npm run start   # serve the production build
-npm run lint    # next lint
+npm run dev     # http://localhost:3000
+npm run build   # production build – all routes static
+npm run start   # serve the build
+npm run lint    # eslint . (flat config, eslint-config-next) – should be clean
 ```
 
-There is no test command and no test files anywhere in the repo. There is nothing to run after
-changes (no codegen, no migrations, no schema sync) — this is a purely static site.
+No test suite. Verify UI changes by building and looking at the pages (see HANDOFF.md for the
+screenshot/flow scripts used so far).
 
-## Directory map
+## Routes
 
 ```
 app/
-  layout.tsx            Root layout: loads 2 Google Fonts via next/font, sets metadata/viewport,
-                         renders <JsonLd/> in <head>, <Analytics/> (Vercel) after children in <body>
-  page.tsx               The entire site: composes all section components in render order
-  globals.css            Brand CSS vars, base styles, .btn-*/.field-*/.radio-tile/.reveal-fade etc.
-  error.tsx               Client error boundary ("Something broke.")
-  not-found.tsx           404 ("Off the map."), noindex
-  robots.ts, sitemap.ts   Generated robots.txt / sitemap.xml (one URL — it's a one-page site)
-  icon.tsx, apple-icon.tsx, opengraph-image.tsx   next/og-generated images (see Gotchas)
-  favicon.ico             Static fallback icon alongside the generated icon.tsx
-
-components/               One file per page section, each self-contained with its own copy/data
-  Nav.tsx, Hero.tsx, MarqueeStrip.tsx, HowItWorks.tsx, WhatWeBuy.tsx, SellForm.tsx, FAQ.tsx,
-  Footer.tsx, StickyMobileCTA.tsx, ToolbarBottomTint.tsx, JsonLd.tsx, Reveal.tsx (shared wrapper)
-
-lib/
-  faqs.ts                Source-of-truth FAQ array — shared by FAQ.tsx AND JsonLd.tsx's FAQPage
-  utils.ts                cn() — a bare clsx wrapper, no tailwind-merge
-  site-status.ts          PAUSED flag — the one piece of config shared across components (see Gotchas)
-
-public/
-  fonts/BricolageGrotesque-ExtraBold.ttf   Read from disk by the three next/og routes
-  hero.jpg                                  Hero background photo (see Gotchas)
+  layout.tsx                 Fonts, default metadata (title template "%s | We Sell Bicycles"),
+                             site-wide <JsonLd/> (BicycleStore), <Analytics/>
+  (site)/layout.tsx          Nav + main + Footer + CartDrawer + ToolbarBottomTint
+  (site)/page.tsx            Home: HomeHero → MarqueeStrip(shop items) → JustIn → Graded → SellBand
+  (site)/shop/page.tsx       Listing; <ShopBrowser/> in <Suspense> (useSearchParams)
+  (site)/shop/[handle]/      Product page, Product JSON-LD, dynamicParams = false
+  (site)/cart/page.tsx       <CartView/>
+  (site)/we-buy/page.tsx     The old site: Hero → Marquee → HowItWorks → WhatWeBuy → SellForm → FAQ
+                             + StickyMobileCTA + BuyJsonLd (FAQPage + Service)
+  (site)/about/page.tsx      Placeholder copy – flagged in the file
+  (checkout)/layout.tsx      Stripped header only (wordmark + "Secure checkout"), like Shopify's
+  (checkout)/checkout/       <CheckoutForm/>          (mock)
+  (checkout)/checkout/confirmation/  <OrderConfirmation/>
+  error.tsx, not-found.tsx, robots.ts (disallows /cart, /checkout), sitemap.ts (all routes +
+  products), icon.tsx / apple-icon.tsx / opengraph-image.tsx (next/og, "WS" / "We Sell Bicycles.")
 ```
 
-## Conventions this codebase actually follows
+## lib/
 
-- **Every component is `export default function Name()`.** No named exports of the main
-  component, no `React.FC`. Small inline subcomponents (icons, tiny pieces) are unexported plain
-  `function Name() {}` declarations in the same file — never split into separate files.
-- **Prop types are always inline type literals at the call site**, never an exported
-  `interface`/`type`. See `components/Reveal.tsx` or the `Field`/`SelectField` helpers in
-  `components/SellForm.tsx` for the pattern. Follow this — don't introduce a shared props-types file.
-- **Client vs. Server Components is deliberate and minimal.** Only 3 of 12 files under
-  `components/` are Server Components (`JsonLd.tsx`, `MarqueeStrip.tsx`, `WhatWeBuy.tsx` — none
-  have `"use client"`); the other 9 have `"use client"` as line 1 and are exactly the ones using
-  `useState`/`useEffect`/click handlers. Don't add `"use client"` to a component unless it actually
-  needs interactivity.
-- **No React Context anywhere.** Cross-component state is coordinated entirely through the DOM —
-  see `data-nav-bg` in Gotchas below. Don't reach for Context; follow the existing DOM-attribute
-  pattern for anything similar, or better, extract a shared hook (see tech debt in ARCHITECTURE.md).
-- **`cn()` from `lib/utils.ts`** is used in exactly 2 of 12 components (`Nav.tsx`, `SellForm.tsx`)
-  for conditional classes; everywhere else conditional classes are plain template-literal string
-  concatenation. Either is acceptable here — this is not a project-wide rule to enforce, just
-  observed inconsistency (see ARCHITECTURE.md).
-- **All configuration lives in module-scope constants inside the component that uses it**
-  (`WHATSAPP_NUMBER` in `SellForm.tsx`, `HERO_IMAGE` in `Hero.tsx`, `SITE_URL` in `JsonLd.tsx`).
-  No component ever receives props from `app/page.tsx` — every one is invoked bare (`<Hero />`).
-  When asked to make something configurable, follow this pattern rather than introducing new
-  prop-drilling or a central config file.
-- **Motion always respects `prefers-reduced-motion`** — either via the global CSS override in
-  `app/globals.css:387-396`, a `motion-reduce:` Tailwind variant, or an explicit
-  `window.matchMedia("(prefers-reduced-motion: reduce)")` check (e.g. `Hero.tsx:27`). Any new
-  animation must do one of these.
-- **Brand colors live in two places that must stay in sync**: CSS custom properties in
-  `app/globals.css:9-16` (`--color-paper`, `--color-ink`, `--color-muted`, `--color-accent`,
-  `--color-rule`) and their Tailwind aliases in `tailwind.config.ts:18-26`. Note `oxblood`,
-  `saffron`, and `accent` are three Tailwind names for the *same* CSS var (`--color-accent`) —
-  legacy naming from a prior palette, kept for diff-clarity per a comment in `tailwind.config.ts:7-16`.
-  Edit `globals.css` only; the Tailwind config doesn't need touching for a color-value change.
+- `shop.ts` – **the Shopify swap point** (`import "server-only"`). `getProducts`, `getProduct`,
+  `getFeatured`, `getRelated`. Replace their bodies with Storefront fetches; callers don't change.
+  Re-exports everything from `product.ts`.
+- `product.ts` – Storefront-shaped types (`Product`, `ProductVariant`, `Money`, `Image`) and pure
+  helpers (`price`, `isAvailable`, `isJustIn`, `sizeOf`, `formatPrice`, `sortProducts`), plus
+  `CATEGORIES`, `GRADES` (A/B/C condition), `SORTS`, `SHIPPING` (mock flat rates).
+  **Client components import from here, never from `shop.ts`.**
+- `catalogue.ts` – 14 mock products built via a `product()` helper; Unsplash IDs for every photo.
+- `cart.ts` (`"use client"`) – cart store: module-scope state + `useSyncExternalStore`, persisted
+  to localStorage (`wsb-cart-v1`). `useCart()`, `addLine`, `setQuantity`, `removeLine`,
+  `openCart`/`closeCart`, `checkoutHref()` (swap point → Shopify `checkoutUrl`), mock
+  `placeOrder`/`readLastOrder` (sessionStorage). **Don't import values from it into server
+  components** – they'd arrive as client references.
+- `contact.ts` – `WHATSAPP_NUMBER`, `INSTAGRAM_URL` (TODO: still the old handle), `SITE_URL`,
+  `SITE_NAME`, `SERVICE_AREAS`.
+- `site-status.ts` – `PAUSED` (currently `false`). See Gotchas.
+- `use-on-dark.ts` – `useOnDark(band, { onCompute, key })`: the shared `data-nav-bg` scroll probe.
+- `use-transition.ts` – `useMounted(open, ms)`, `useEntered(open)`, `useModal(open, onClose)` for
+  overlays (menu, cart drawer, filter sheet).
+- `use-parallax.ts` – `useParallax()` returns `{ section, image, headline }` refs for the two heroes.
+- `faqs.ts` (FAQ section + FAQPage JSON-LD), `utils.ts` (`cn()`).
 
-## Known gotchas
+## Conventions
 
-- **The site is currently in PAUSED mode** (`lib/site-status.ts`, set 2026-10-10). The client has
-  stopped buying while new seller requirements are worked out. `PAUSED` is the one shared flag every
-  component checks (Hero, Nav, SellForm,
-  StickyMobileCTA, FAQ, WhatWeBuy, Footer, error.tsx, JsonLd). **Any new CTA, WhatsApp link, or
-  intake path must be hidden when `PAUSED` is true.** Never pause via 503/`noindex`/robots.txt; see
-  README "Paused mode" for the SEO reasoning. Setting it to `false` was verified to render the
-  pre-pause site identically.
+- **Components:** `export default function Name()`, one per file in `components/`, small helpers
+  (icons, sub-pieces) as unexported functions in the same file. Prop types are inline literals.
+  Exception: `components/FormFields.tsx` exports `Field`, `SelectField`, `Req` – shared by
+  `SellForm` and `CheckoutForm`.
+- **Props:** page sections still take no props where they don't need data. Data-driven pieces
+  take what they render (`ProductCard product`, `CartLines lines`, `MarqueeStrip items?`).
+- **`"use client"` only where needed.** Server: ProductCard, JustIn, Graded, SellBand, JsonLd,
+  BuyJsonLd, WhatWeBuy, MarqueeStrip, all `page.tsx` files. Note ProductCard also renders inside
+  the client `ShopBrowser`, so it must stay free of server-only imports.
+- **No React Context.** Shared state is either the cart store (`lib/cart.ts`) or the DOM
+  (`data-nav-bg`).
+- **Motion respects `prefers-reduced-motion`**: the global override in `globals.css`, a
+  `motion-reduce:` variant, or a `matchMedia` check (`useParallax`).
+- **Copy/config** sits in module-scope constants at the top of the file that uses it; shared
+  values go in `lib/contact.ts`.
 
-- **iOS 26 Safari toolbar-tint workaround spans 3 files** — don't "simplify" any of these without
-  understanding why they exist: `Nav.tsx` (sticky header handles the top bar directly by swapping
-  bg color), `ToolbarBottomTint.tsx` (an invisible 12px fixed strip purely to give Safari something
-  to sample for the bottom bar), and `StickyMobileCTA.tsx` (transparent fixed wrapper + absolute
-  child + full DOM unmount when hidden, rather than CSS visibility). All three independently
-  re-implement the same `data-nav-bg` polling loop (see ARCHITECTURE.md for the duplication).
-- **`data-nav-bg="dark"` is the site's only cross-component coordination mechanism.** Any full-bleed
-  dark section sets this attribute (`Footer.tsx:8`, `MarqueeStrip.tsx:21`, `WhatWeBuy.tsx:25`);
-  `Nav.tsx`, `StickyMobileCTA.tsx`, and `ToolbarBottomTint.tsx` each poll
-  `document.querySelectorAll('[data-nav-bg="dark"]')` on scroll to decide their own light/dark
-  treatment. Preserve this convention for any new dark section — don't invent a new mechanism.
-- **The WhatsApp message must use `\r\n`, not `\n`.** `buildMessage()` in `SellForm.tsx:65-81`
-  joins lines with `"\r\n"` deliberately — iOS WhatsApp's `wa.me` URL handler drops plain LF line
-  breaks. Preserve this if you touch `buildMessage()`.
-- **`window.open()` for the WhatsApp link must stay synchronous inside the click handler**
-  (`SellForm.tsx:122-128`) — it's called before any `setState`, specifically to stay inside the
-  click's "transient activation window," which iOS 26 Safari shrinks to ~0.5s. Moving it after
-  `track()` or a state update risks the popup getting blocked.
-- **The WhatsApp number lives in two places.** `WHATSAPP_NUMBER` (`SellForm.tsx:12`) is the live
-  production number (confirmed by the user, 2026-10-10), but `app/error.tsx:21` hardcodes the same
-  number in its `wa.me` link. Change both together.
-- **`public/hero.jpg` is still the Unsplash placeholder photo**, downloaded and self-hosted
-  (commit `8580d93`) rather than hotlinked. `Hero.tsx:10`'s "PLACEHOLDER PHOTO" comment is accurate;
-  whether a real product photo will replace it hasn't been decided. The file is saved as greyscale
-  and served at `quality={50}` to cut bytes; any replacement photo should be converted to greyscale
-  too (see README "Hero image").
-- **The favicon is 192×192, not the usual 16/32/64**, deliberately — `app/icon.tsx:5-11` explains
-  Google Search only accepts favicon sizes that are multiples of 48.
+## Styling (Tailwind 4)
+
+- Tokens live in `@theme` in `app/globals.css` – colours (`paper`, `ink`, `muted`, `accent`,
+  `rule`), `tracking-cap`, `max-w-page`/`max-w-prose`, `animate-*` + keyframes. There is **no
+  `tailwind.config.ts`**. Opacity modifiers (`text-ink/70`, `bg-accent/15`) work now; they
+  generated nothing under the old Tailwind 3 setup.
+- Custom classes (`.display-mega`, `.display-tight`, `.numeral`, `.tabular`, `.eyebrow`,
+  `.btn-primary|yellow|ghost`, `.field-*`, `.radio-tile`, `.highlight`, `.reveal-fade`, …) are in
+  `@layer components`, so **utilities override them** (`btn-ghost py-2` works).
+- Language: white / near-black / `#EAFF00`, 1.5px ink rules, zero radius, condensed Bricolage
+  (`fontVariationSettings` wdth/opsz) for display, JetBrains Mono for labels, gapless ruled grids
+  (parent draws top+left border, cells draw right+bottom – see ProductCard / HowItWorks).
+- A big `.display-mega` + `.highlight` headline needs `mt-6`+ below an eyebrow, or the yellow
+  strap overlaps it.
+
+## Gotchas
+
+- **`PAUSED` now gates the buy side only.** When true: `/we-buy` shows the "Back soon." hero,
+  locked form, nav strip (on `/we-buy` only); the home SellBand, hero "Sell us yours", footer and
+  About "sell" links disappear. General WhatsApp contact (footer, About, confirmation) **stays**,
+  because shop customers need it. Never pause via 503 / noindex / robots.
+- **iOS 26 Safari toolbar tint.** Safari samples `position: fixed/sticky` backgrounds near the
+  viewport edges. Hence: Nav swaps paper/ink instead of going translucent; `ToolbarBottomTint`
+  is an invisible 12px strip; fixed overlays (mobile menu, cart drawer, filter sheet, sticky
+  CTAs) **unmount** when hidden (`useMounted`), and sticky bars put their background on an
+  `absolute` child of a transparent fixed wrapper (`StickyMobileCTA`, `AddToCart`).
+- **`data-nav-bg="dark"`** on every full-bleed dark section (Footer, MarqueeStrip, WhatWeBuy,
+  Graded, product spec sheet, About "Two cities"). `useOnDark` reads it; components that
+  persist across navigations pass `key: pathname`.
+- **WhatsApp message uses `\r\n`** (`buildMessage()` in SellForm – iOS drops bare LF), and
+  `window.open` stays synchronous in the submit handler (iOS 26 activation window).
+- **Images:** hero photos (`hero.jpg`, `home-hero.jpg`) are greyscale files. Product photos in
+  `public/products/` are **colour** and shown in colour. Sold items get `grayscale` + faded
+  (ProductCard and the product gallery); ProductCard restores colour on hover/focus.
+- **Favicon is 192×192** on purpose (Google wants multiples of 48).
