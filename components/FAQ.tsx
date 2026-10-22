@@ -107,14 +107,6 @@ export default function FAQ() {
           </div>
         )}
       </div>
-
-      {/* Local keyframes for accordion */}
-      <style>{`
-        @keyframes acc-open { from { height: 0; opacity: 0 } to { height: var(--radix-accordion-content-height); opacity: 1 } }
-        @keyframes acc-close { from { height: var(--radix-accordion-content-height); opacity: 1 } to { height: 0; opacity: 0 } }
-        .animate-acc-open { animation: acc-open 280ms cubic-bezier(0.22,1,0.36,1); }
-        .animate-acc-close { animation: acc-close 220ms cubic-bezier(0.4,0,1,1); }
-      `}</style>
     </section>
   );
 }

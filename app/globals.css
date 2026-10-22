@@ -1,387 +1,441 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 /* -------------------------------------------------------------------------- */
 /*  Brand tokens – change these to re-skin the site.                          */
-/*  Mirrored in tailwind.config.ts under `theme.extend.colors`.               */
+/*  Tailwind 4 reads these directly: `text-ink`, `bg-accent/15` etc. Opacity  */
+/*  modifiers work because v4 builds them with color-mix() – they produced    */
+/*  no CSS at all on the old Tailwind 3 setup.                                */
 /* -------------------------------------------------------------------------- */
-:root {
+@theme {
   --color-paper: #ffffff;
   --color-ink: #0a0a0a;
   --color-muted: #6e6e6e;
   --color-accent: #eaff00;
   --color-rule: rgba(10, 10, 10, 0.1);
+
+  --tracking-cap: 0.14em;
+  --container-page: 82rem;
+  --container-prose: 42rem;
+
+  --animate-fade-up: fadeUp 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-marquee: marquee 60s linear infinite;
+  --animate-ticker-pulse: tickerPulse 1.4s ease-in-out infinite;
+  --animate-acc-open: acc-open 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-acc-close: acc-close 220ms cubic-bezier(0.4, 0, 1, 1);
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes tickerPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+  @keyframes acc-open {
+    from { height: 0; opacity: 0; }
+    to { height: var(--radix-accordion-content-height); opacity: 1; }
+  }
+  @keyframes acc-close {
+    from { height: var(--radix-accordion-content-height); opacity: 1; }
+    to { height: 0; opacity: 0; }
+  }
+}
+
+/* Fonts come from next/font CSS variables set on <html>, so they're inlined. */
+@theme inline {
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+}
+
+:root {
   --color-rule-strong: rgba(10, 10, 10, 0.85);
 }
 
-/* -------------------------------------------------------------------------- */
-/*  Base                                                                       */
-/* -------------------------------------------------------------------------- */
-html {
-  /* Explicit bg so iOS 26 Safari's toolbar doesn't fall back to white
-     sampling for areas where no fixed element is present. */
-  background-color: var(--color-paper);
-  scroll-behavior: smooth;
-  scroll-padding-top: 5rem;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
-
-body {
-  background-color: var(--color-paper);
-  color: var(--color-ink);
-  font-family: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
-  /* Body optical size + normal width. */
-  font-variation-settings: "opsz" 14, "wdth" 100;
-  font-feature-settings: "ss01", "cv11";
-  /* Marquee strip extends visually beyond viewport by design (for the
-     looping animation). The strip's parent has overflow-hidden which
-     keeps document.scrollWidth at innerWidth, but macOS Safari's
-     trackpad rubber-band still engages on the visual overflow. Clipping
-     horizontal at the body stops the elastic drift outright. */
-  overflow-x: clip;
-}
-
-::selection {
-  background: var(--color-accent);
-  color: var(--color-ink);
-}
-
-:focus-visible {
-  outline: 2px solid var(--color-ink);
-  outline-offset: 3px;
-  border-radius: 0;
-}
-
-/* Suppress iOS Safari's default blue tap-highlight rectangle on
-   interactive elements. The site uses `:active { transform }` for
-   tactile feedback instead. */
-a,
-button,
-[role="button"],
-label.radio-tile,
-.field-select {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* -------------------------------------------------------------------------- */
-/*  Display type – Bricolage tuned wide-to-condensed for signage character.   */
-/*  Use `.display-*` utilities to switch optical sizes.                        */
-/* -------------------------------------------------------------------------- */
-.font-display {
-  font-variation-settings: "opsz" 96, "wdth" 95;
-  letter-spacing: -0.02em;
-  font-weight: 700;
-}
-
-/* Massive, condensed, sign-painted feel for the hero lock-up.
-   Letter-spacing kept slightly negative for poster-density without crushing
-   narrow letters (I, l, t) into their neighbours. */
-.display-mega {
-  font-variation-settings: "opsz" 96, "wdth" 80;
-  letter-spacing: -0.015em;
-  font-weight: 800;
-  line-height: 0.9;
-  text-transform: uppercase;
-}
-
-/* Sub-headers – slightly more open than mega. */
-.display-tight {
-  font-variation-settings: "opsz" 48, "wdth" 80;
-  letter-spacing: -0.03em;
-  font-weight: 700;
-  line-height: 0.95;
-  text-transform: uppercase;
-}
-
-/* For numerals – gives them weight without being condensed. */
-.numeral {
-  font-variation-settings: "opsz" 96, "wdth" 85;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  line-height: 0.85;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Receipt/ticket numerals using mono. */
-.tabular {
-  font-family: var(--font-jetbrains), ui-monospace, monospace;
-  font-variant-numeric: tabular-nums;
-}
-
-/* -------------------------------------------------------------------------- */
-/*  Reusable label – mono SKU style.                                           */
-/* -------------------------------------------------------------------------- */
-.eyebrow {
-  font-family: var(--font-jetbrains), ui-monospace, monospace;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: var(--color-muted);
-}
-
-/* -------------------------------------------------------------------------- */
-/*  Buttons – blunt black slabs with a yellow strap variant.                   */
-/* -------------------------------------------------------------------------- */
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.55rem;
-  background: var(--color-ink);
-  color: var(--color-paper);
-  padding: 1.05rem 1.5rem;
-  font-weight: 600;
-  font-size: 0.95rem;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  border: 1.5px solid var(--color-ink);
-  border-radius: 0;
-  position: relative;
-  transition: transform 180ms ease, background 180ms ease, color 180ms ease;
-  font-variation-settings: "wdth" 95;
-}
-.btn-primary:hover {
-  background: var(--color-accent);
-  color: var(--color-ink);
-}
-.btn-primary:active {
-  transform: translateY(1px);
-}
-
-.btn-yellow {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.55rem;
-  background: var(--color-accent);
-  color: var(--color-ink);
-  padding: 1.05rem 1.5rem;
-  font-weight: 700;
-  font-size: 0.95rem;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  border: 1.5px solid var(--color-ink);
-  border-radius: 0;
-  position: relative;
-  transition: transform 180ms ease, background 180ms ease;
-  font-variation-settings: "wdth" 95;
-}
-.btn-yellow:hover {
-  background: var(--color-ink);
-  color: var(--color-accent);
-}
-.btn-yellow:active {
-  transform: translateY(1px);
-}
-
-.btn-ghost {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  color: var(--color-ink);
-  padding: 1.05rem 0.25rem;
-  font-size: 0.94rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  border-bottom: 2px solid var(--color-ink);
-  transition: gap 180ms ease, color 180ms ease, border-color 180ms ease;
-}
-.btn-ghost:hover {
-  gap: 0.7rem;
-}
-
-/* -------------------------------------------------------------------------- */
-/*  Form controls – confident blocks. Big, bordered, transactional.            */
-/* -------------------------------------------------------------------------- */
-.field-label {
-  font-family: var(--font-jetbrains), ui-monospace, monospace;
-  font-size: 0.72rem;
-  color: var(--color-ink);
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.field-input,
-.field-select,
-.field-textarea {
-  width: 100%;
-  background: var(--color-paper);
-  border: 1.5px solid var(--color-ink);
-  border-radius: 0;
-  padding: 0.95rem 1rem;
-  font-size: 1rem;
-  font-family: inherit;
-  color: var(--color-ink);
-  transition: background 160ms ease, box-shadow 160ms ease;
-}
-.field-input::placeholder,
-.field-textarea::placeholder {
-  color: rgba(10, 10, 10, 0.35);
-}
-.field-input:hover,
-.field-select:hover,
-.field-textarea:hover {
-  background: #fafafa;
-}
-.field-input:focus,
-.field-select:focus,
-.field-textarea:focus {
-  outline: none;
-  background: var(--color-paper);
-  box-shadow: inset 0 -4px 0 var(--color-accent);
-}
-.field-input:focus-visible,
-.field-select:focus-visible,
-.field-textarea:focus-visible {
-  outline: none;
-  box-shadow: inset 0 -4px 0 var(--color-accent);
-}
-.field-textarea {
-  resize: vertical;
-  min-height: 6rem;
-}
-.field-select {
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1.5l5 5 5-5' fill='none' stroke='%230A0A0A' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
-  padding-right: 2.25rem;
-}
-
-.field-error[data-show="true"] {
-  color: var(--color-ink);
-  font-size: 0.78rem;
-  margin-top: 0.45rem;
-  font-family: var(--font-jetbrains), ui-monospace, monospace;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  background: var(--color-accent);
-  display: inline-block;
-  padding: 0.2rem 0.45rem;
-}
-
-.field-has-error .field-input,
-.field-has-error .field-select,
-.field-has-error .field-textarea {
-  box-shadow: inset 0 -4px 0 var(--color-accent);
-}
-
-/* Radio chips – blocky pills, no glyphs */
-.radio-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0;
-  margin-left: -1.5px;
-}
-.radio-tile {
-  position: relative;
-  flex: 1 1 0;
-  min-width: 7rem;
-  margin-left: -1.5px;
-}
-.radio-tile input {
-  position: absolute;
-  opacity: 0;
-  inset: 0;
+/* Tailwind 4's preflight gives buttons `cursor: default`; v3 used pointer. */
+button:not(:disabled),
+[role="button"]:not(:disabled) {
   cursor: pointer;
 }
-.radio-tile span {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.95rem 0.9rem;
-  border: 1.5px solid var(--color-ink);
-  border-radius: 0;
-  font-size: 0.95rem;
-  font-weight: 500;
-  cursor: pointer;
-  background: var(--color-paper);
-  transition: background 160ms ease, color 160ms ease;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-.radio-tile:hover span {
-  background: #fafafa;
-}
-.radio-tile input:checked + span {
-  background: var(--color-ink);
-  color: var(--color-paper);
-}
-.radio-tile input:focus-visible + span {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-  position: relative;
-  z-index: 1;
+
+/* Layered so Tailwind utilities can override these in markup (in v4,
+   unlayered CSS beats every utility). */
+@layer base {
+  /* -------------------------------------------------------------------------- */
+  /*  Base                                                                       */
+  /* -------------------------------------------------------------------------- */
+  html {
+    /* Explicit bg so iOS 26 Safari's toolbar doesn't fall back to white
+       sampling for areas where no fixed element is present. */
+    background-color: var(--color-paper);
+    scroll-behavior: smooth;
+    /* Clears the sticky header, including the taller paused-mode strip. */
+    scroll-padding-top: 7rem;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+    /* Body optical size + normal width. */
+    font-variation-settings: "opsz" 14, "wdth" 100;
+    font-feature-settings: "ss01", "cv11";
+    /* Marquee strip extends visually beyond viewport by design (for the
+       looping animation). The strip's parent has overflow-hidden which
+       keeps document.scrollWidth at innerWidth, but macOS Safari's
+       trackpad rubber-band still engages on the visual overflow. Clipping
+       horizontal at the body stops the elastic drift outright. */
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 3px;
+    border-radius: 0;
+  }
+
+  /* Suppress iOS Safari's default blue tap-highlight rectangle on
+     interactive elements. The site uses `:active { transform }` for
+     tactile feedback instead. */
+  a,
+  button,
+  [role="button"],
+  label.radio-tile,
+  .field-select {
+    -webkit-tap-highlight-color: transparent;
+  }
 }
 
-/* -------------------------------------------------------------------------- */
-/*  Decorative                                                                  */
-/* -------------------------------------------------------------------------- */
-.hairline {
-  height: 1px;
-  background: var(--color-rule);
-}
-.hairline-strong {
-  height: 1.5px;
-  background: var(--color-ink);
-}
+@layer components {
+  /* -------------------------------------------------------------------------- */
+  /*  Display type – Bricolage tuned wide-to-condensed for signage character.   */
+  /*  Use `.display-*` utilities to switch optical sizes.                        */
+  /* -------------------------------------------------------------------------- */
+  .font-display {
+    font-variation-settings: "opsz" 96, "wdth" 95;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
 
-.dot {
-  display: inline-block;
-  width: 0.6rem;
-  height: 0.6rem;
-  background: var(--color-accent);
-  border-radius: 999px;
-  vertical-align: middle;
-}
+  /* Massive, condensed, sign-painted feel for the hero lock-up.
+     Letter-spacing kept slightly negative for poster-density without crushing
+     narrow letters (I, l, t) into their neighbours. */
+  .display-mega {
+    font-variation-settings: "opsz" 96, "wdth" 80;
+    letter-spacing: -0.015em;
+    font-weight: 800;
+    line-height: 0.9;
+    text-transform: uppercase;
+  }
 
-/* Yellow highlighter – wraps a span of text in a yellow strap */
-.highlight {
-  background: var(--color-accent);
-  box-shadow: 0.2em 0 0 var(--color-accent), -0.2em 0 0 var(--color-accent);
-}
+  /* Sub-headers – slightly more open than mega. */
+  .display-tight {
+    font-variation-settings: "opsz" 48, "wdth" 80;
+    letter-spacing: -0.03em;
+    font-weight: 700;
+    line-height: 0.95;
+    text-transform: uppercase;
+  }
 
-/* -------------------------------------------------------------------------- */
-/*  Scroll-triggered reveals                                                   */
-/*  Pair with the <Reveal> component (data-revealed toggle).                   */
-/* -------------------------------------------------------------------------- */
-.reveal-fade {
-  opacity: 0;
-  transform: translateY(14px);
-  transition: opacity 700ms cubic-bezier(0.16, 1, 0.3, 1),
-    transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-[data-revealed="true"] .reveal-fade,
-[data-revealed="true"].reveal-fade {
-  opacity: 1;
-  transform: translateY(0);
-}
+  /* For numerals – gives them weight without being condensed. */
+  .numeral {
+    font-variation-settings: "opsz" 96, "wdth" 85;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 0.85;
+    font-variant-numeric: tabular-nums;
+  }
 
-/* Yellow rule that slides in from the left as a card enters view.
-   Place at top: <div class="step-rule"></div> inside a .steps li,
-   then add .is-visible on the .steps parent to trigger. */
-.step-rule {
-  position: absolute;
-  top: -1.5px; /* sit on the cell's top border */
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: var(--color-accent);
-  transform: scaleX(0);
-  transform-origin: left center;
-  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  /* Receipt/ticket numerals using mono. */
+  .tabular {
+    font-family: var(--font-jetbrains), ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /*  Reusable label – mono SKU style.                                           */
+  /* -------------------------------------------------------------------------- */
+  .eyebrow {
+    font-family: var(--font-jetbrains), ui-monospace, monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--color-muted);
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /*  Buttons – blunt black slabs with a yellow strap variant.                   */
+  /* -------------------------------------------------------------------------- */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    padding: 1.05rem 1.5rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    border: 1.5px solid var(--color-ink);
+    border-radius: 0;
+    position: relative;
+    transition: transform 180ms ease, background 180ms ease, color 180ms ease;
+    font-variation-settings: "wdth" 95;
+  }
+  .btn-primary:hover {
+    background: var(--color-accent);
+    color: var(--color-ink);
+  }
+  .btn-primary:active {
+    transform: translateY(1px);
+  }
+
+  .btn-yellow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    background: var(--color-accent);
+    color: var(--color-ink);
+    padding: 1.05rem 1.5rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    border: 1.5px solid var(--color-ink);
+    border-radius: 0;
+    position: relative;
+    transition: transform 180ms ease, background 180ms ease;
+    font-variation-settings: "wdth" 95;
+  }
+  .btn-yellow:hover {
+    background: var(--color-ink);
+    color: var(--color-accent);
+  }
+  .btn-yellow:active {
+    transform: translateY(1px);
+  }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--color-ink);
+    padding: 1.05rem 0.25rem;
+    font-size: 0.94rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 2px solid var(--color-ink);
+    transition: gap 180ms ease, color 180ms ease, border-color 180ms ease;
+  }
+  .btn-ghost:hover {
+    gap: 0.7rem;
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /*  Form controls – confident blocks. Big, bordered, transactional.            */
+  /* -------------------------------------------------------------------------- */
+  .field-label {
+    font-family: var(--font-jetbrains), ui-monospace, monospace;
+    font-size: 0.72rem;
+    color: var(--color-ink);
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .field-input,
+  .field-select,
+  .field-textarea {
+    width: 100%;
+    background: var(--color-paper);
+    border: 1.5px solid var(--color-ink);
+    border-radius: 0;
+    padding: 0.95rem 1rem;
+    font-size: 1rem;
+    font-family: inherit;
+    color: var(--color-ink);
+    transition: background 160ms ease, box-shadow 160ms ease;
+  }
+  .field-input::placeholder,
+  .field-textarea::placeholder {
+    color: rgba(10, 10, 10, 0.35);
+  }
+  .field-input:hover,
+  .field-select:hover,
+  .field-textarea:hover {
+    background: #fafafa;
+  }
+  .field-input:focus,
+  .field-select:focus,
+  .field-textarea:focus {
+    outline: none;
+    background: var(--color-paper);
+    box-shadow: inset 0 -4px 0 var(--color-accent);
+  }
+  .field-input:focus-visible,
+  .field-select:focus-visible,
+  .field-textarea:focus-visible {
+    outline: none;
+    box-shadow: inset 0 -4px 0 var(--color-accent);
+  }
+  .field-textarea {
+    resize: vertical;
+    min-height: 6rem;
+  }
+  .field-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1.5l5 5 5-5' fill='none' stroke='%230A0A0A' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.25rem;
+  }
+
+  .field-error[data-show="true"] {
+    color: var(--color-ink);
+    font-size: 0.78rem;
+    margin-top: 0.45rem;
+    font-family: var(--font-jetbrains), ui-monospace, monospace;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: var(--color-accent);
+    display: inline-block;
+    padding: 0.2rem 0.45rem;
+  }
+
+  .field-has-error .field-input,
+  .field-has-error .field-select,
+  .field-has-error .field-textarea {
+    box-shadow: inset 0 -4px 0 var(--color-accent);
+  }
+
+  /* Radio chips – blocky pills, no glyphs */
+  .radio-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    margin-left: -1.5px;
+  }
+  .radio-tile {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 7rem;
+    margin-left: -1.5px;
+  }
+  .radio-tile input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    cursor: pointer;
+  }
+  .radio-tile span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.95rem 0.9rem;
+    border: 1.5px solid var(--color-ink);
+    border-radius: 0;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    background: var(--color-paper);
+    transition: background 160ms ease, color 160ms ease;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .radio-tile:hover span {
+    background: #fafafa;
+  }
+  .radio-tile input:checked + span {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+  .radio-tile input:focus-visible + span {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /*  Decorative                                                                  */
+  /* -------------------------------------------------------------------------- */
+  .hairline {
+    height: 1px;
+    background: var(--color-rule);
+  }
+  .hairline-strong {
+    height: 1.5px;
+    background: var(--color-ink);
+  }
+
+  .dot {
+    display: inline-block;
+    width: 0.6rem;
+    height: 0.6rem;
+    background: var(--color-accent);
+    border-radius: 999px;
+    vertical-align: middle;
+  }
+
+  /* Yellow highlighter – wraps a span of text in a yellow strap */
+  .highlight {
+    background: var(--color-accent);
+    box-shadow: 0.2em 0 0 var(--color-accent), -0.2em 0 0 var(--color-accent);
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /*  Scroll-triggered reveals                                                   */
+  /*  Pair with the <Reveal> component (data-revealed toggle).                   */
+  /* -------------------------------------------------------------------------- */
+  .reveal-fade {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 700ms cubic-bezier(0.16, 1, 0.3, 1),
+      transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  [data-revealed="true"] .reveal-fade,
+  [data-revealed="true"].reveal-fade {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Yellow rule that slides in from the left as a card enters view.
+     Place at top: <div class="step-rule"></div> inside a .steps li,
+     then add .is-visible on the .steps parent to trigger. */
+  .step-rule {
+    position: absolute;
+    top: -1.5px; /* sit on the cell's top border */
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .steps.is-visible li:nth-child(1) .step-rule { transform: scaleX(1); transition-delay: 0ms; }
+  .steps.is-visible li:nth-child(2) .step-rule { transform: scaleX(1); transition-delay: 110ms; }
+  .steps.is-visible li:nth-child(3) .step-rule { transform: scaleX(1); transition-delay: 220ms; }
+  .steps.is-visible li:nth-child(4) .step-rule { transform: scaleX(1); transition-delay: 330ms; }
 }
-.steps.is-visible li:nth-child(1) .step-rule { transform: scaleX(1); transition-delay: 0ms; }
-.steps.is-visible li:nth-child(2) .step-rule { transform: scaleX(1); transition-delay: 110ms; }
-.steps.is-visible li:nth-child(3) .step-rule { transform: scaleX(1); transition-delay: 220ms; }
-.steps.is-visible li:nth-child(4) .step-rule { transform: scaleX(1); transition-delay: 330ms; }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
