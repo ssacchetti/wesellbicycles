@@ -10,7 +10,7 @@ import { PAUSED } from "@/lib/site-status";
 export const metadata: Metadata = {
   title: "About & Contact",
   description:
-    "We buy used road bikes, fix them properly and sell them on – across Melbourne and Geelong. Pickups by appointment, questions on WhatsApp.",
+    "We buy used road bikes, fix them properly and sell them on – across Melbourne and Geelong. Shop pickups in Melbourne by appointment, questions on WhatsApp.",
   alternates: { canonical: "/about" },
 };
 
@@ -75,15 +75,15 @@ export default function AboutPage() {
                 <h2 className="display-mega mt-3 text-[clamp(2.6rem,7.5vw,6rem)]">Two cities.</h2>
               </div>
               <p className="max-w-sm text-[0.98rem] leading-relaxed text-paper/70">
-                No shopfront – pickups, drop-offs and test rides are by
-                appointment. Everywhere else in Australia, we ship.
+                We buy bikes across both. Shop pickups and test rides are in
+                Melbourne, by appointment – everywhere else in Australia, we ship.
               </p>
             </header>
           </Reveal>
           <div className="grid grid-cols-1 border-t-[1.5px] border-paper/25 md:grid-cols-2">
             {[
-              ["Melbourne", "Greater metro – inner north, east, bayside, out to the Peninsula."],
-              ["Geelong", "Geelong and the Bellarine."],
+              ["Melbourne", "We buy across the greater metro – inner north, east, bayside, out to the Peninsula. Shop pickups and test rides happen here."],
+              ["Geelong", "We buy and collect across Geelong and the Bellarine."],
             ].map(([city, area], i) => (
               <div
                 key={city}

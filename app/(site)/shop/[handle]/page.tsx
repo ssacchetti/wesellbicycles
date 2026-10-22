@@ -129,7 +129,7 @@ export default async function ProductPage({ params }: Params) {
 
                 <dl className="mt-8 border-t-[1.5px] border-ink text-[0.92rem]">
                   {[
-                    ["Pick up", "Free – Melbourne or Geelong, by appointment"],
+                    ["Pick up", "Free – Melbourne, by appointment"],
                     ["Delivery", `${formatPrice(shipping.price)} Australia-wide · ${shipping.note}`],
                     ["Returns", "7 days if it's not as described"],
                   ].map(([k, v]) => (

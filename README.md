@@ -1,6 +1,6 @@
 # We Sell Bicycles
 
-Used road bikes and parts, workshop-checked and priced straight – Melbourne & Geelong pickup or
+Used road bikes and parts, workshop-checked and priced straight – Melbourne pickup or
 shipped Australia-wide. The original **We Buy Bicycles** cash-for-bikes site lives on at `/we-buy`.
 
 **Status:** front-end mockup on mock data. Shopify is the planned backend (see `HANDOFF.md`).

@@ -6,7 +6,8 @@
 
 ## What this is
 
-**We Sell Bicycles** – a multi-page shop for used road bikes and parts (Melbourne + Geelong),
+**We Sell Bicycles** – a multi-page shop for used road bikes and parts (pickup in Melbourne,
+shipping Australia-wide; the buy side covers Melbourne + Geelong),
 with the original "We Buy Bicycles" cash-for-bikes site living on as the `/we-buy` page.
 
 It is currently a **front-end mockup**: real pages and interactions, **mock data**. The shop

@@ -1,7 +1,8 @@
 "use client";
 
 // MOCK CHECKOUT – design reference for Shopify's branded hosted checkout.
-// Sections follow Shopify's order (Contact → Delivery → Address → Payment,
+// Sections follow Shopify's order (Contact → Delivery (ship / Melbourne
+// pickup) → Address → Payment,
 // summary alongside) so the look maps 1:1 onto Checkout branding settings
 // later. Nothing is charged or sent anywhere: submit validates, writes a
 // mock order to sessionStorage, empties the cart and shows the
@@ -21,7 +22,7 @@ const STATES = ["VIC", "NSW", "ACT", "QLD", "SA", "WA", "TAS", "NT"];
 type FormState = {
   email: string;
   news: boolean;
-  delivery: "ship" | "melbourne" | "geelong";
+  delivery: "ship" | "melbourne";
   first: string;
   last: string;
   address: string;
@@ -212,12 +213,11 @@ export default function CheckoutForm() {
         </Step>
 
         <Step n={2} title="Delivery">
-          <div role="radiogroup" aria-label="Delivery method" className="grid grid-cols-1 border-l-[1.5px] border-t-[1.5px] border-ink sm:grid-cols-3">
+          <div role="radiogroup" aria-label="Delivery method" className="grid grid-cols-1 border-l-[1.5px] border-t-[1.5px] border-ink sm:grid-cols-2">
             {(
               [
                 ["ship", hasBike ? SHIPPING.bikeShip : SHIPPING.ship],
                 ["melbourne", SHIPPING.melbourne],
-                ["geelong", SHIPPING.geelong],
               ] as const
             ).map(([key, opt]) => {
               const active = f.delivery === key;

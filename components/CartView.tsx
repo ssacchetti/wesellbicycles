@@ -60,7 +60,7 @@ export default function CartView() {
           <ul className="mt-6 space-y-2 border-t border-rule pt-5 text-[0.85rem] text-ink/75">
             {[
               "Workshop checked before it ships",
-              "Free pickup in Melbourne or Geelong",
+              "Free pickup in Melbourne",
               "7-day returns if it's not as described",
             ].map((t) => (
               <li key={t} className="flex gap-3">

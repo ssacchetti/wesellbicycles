@@ -22,11 +22,11 @@ const jetbrains = JetBrains_Mono({
 });
 
 const DESCRIPTION =
-  "Used road bikes and parts, workshop-checked and priced straight. Pickup across Melbourne and Geelong or shipped Australia-wide. We buy bikes for cash, too.";
+  "Used road bikes and parts, workshop-checked and priced straight. Pickup in Melbourne or shipped Australia-wide. We buy bikes for cash, too.";
 
 export const metadata: Metadata = {
   title: {
-    default: "Used Road Bikes & Parts – Melbourne & Geelong | We Sell Bicycles",
+    default: "Used Road Bikes & Parts – Melbourne & Australia-wide | We Sell Bicycles",
     template: "%s | We Sell Bicycles",
   },
   description: DESCRIPTION,

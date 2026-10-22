@@ -29,7 +29,7 @@ export default function Footer() {
           <div className="md:col-span-5">
             <p className="max-w-md text-[1rem] leading-relaxed text-paper/75">
               Used road bikes and parts, workshop-checked and priced
-              straight. Melbourne and Geelong pickup, or shipped
+              straight. Pickup in Melbourne, or shipped
               Australia-wide.
             </p>
             <p className="mt-4 max-w-md text-[0.78rem] leading-relaxed text-paper/55">

@@ -106,6 +106,5 @@ export const SHIPPING = {
   ship: { label: "Ship Australia-wide", price: 29, note: "3–6 business days" },
   bikeShip: { label: "Ship Australia-wide (boxed bike)", price: 99, note: "5–8 business days" },
   melbourne: { label: "Pick up – Melbourne", price: 0, note: "Free, by appointment – address sent on WhatsApp" },
-  geelong: { label: "Pick up – Geelong", price: 0, note: "Free, by appointment – address sent on WhatsApp" },
 } as const;
 export type ShippingKey = keyof typeof SHIPPING;

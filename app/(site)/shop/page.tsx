@@ -7,7 +7,7 @@ import { getProducts, isAvailable } from "@/lib/shop";
 export const metadata: Metadata = {
   title: "Shop Used Road Bikes & Parts",
   description:
-    "Used road bikes, framesets, wheels, groupsets and parts – workshop-checked, graded honestly, priced straight. Melbourne & Geelong pickup or shipped Australia-wide.",
+    "Used road bikes, framesets, wheels, groupsets and parts – workshop-checked, graded honestly, priced straight. Melbourne pickup or shipped Australia-wide.",
   alternates: { canonical: "/shop" },
 };
 

@@ -83,7 +83,7 @@ export default function Graded() {
             href="/about"
             className="underline decoration-accent decoration-[3px] underline-offset-4 transition-colors hover:text-accent"
           >
-            Book a look in Melbourne or Geelong
+            Book a look in Melbourne
           </Link>
           . No obligation.
         </p>

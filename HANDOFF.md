@@ -19,7 +19,7 @@ design language, on mock data:
 | `/shop` | Listing – category tabs, filters (size, condition, price, brand, in stock), sort, URL state, mobile filter sheet |
 | `/shop/[handle]` | Product – gallery, grade, size variants, add to cart, mobile sticky add bar, spec sheet, workshop note, related |
 | `/cart` + drawer | Cart drawer (opens on add / nav button) and full cart page |
-| `/checkout` | Mock checkout styled to map onto Shopify's: contact → delivery (ship / pickup Melb / pickup Geelong) → address → payment, summary, validation |
+| `/checkout` | Mock checkout styled to map onto Shopify's: contact → delivery (ship / pickup Melbourne) → address → payment, summary, validation |
 | `/checkout/confirmation` | "Sorted." + receipt |
 | `/we-buy` | The original site, unchanged, form live |
 | `/about` | Story / service areas / contact (**placeholder copy**) |

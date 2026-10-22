@@ -73,8 +73,8 @@ export default function HomeHero() {
               </p>
               <p className="mt-4 max-w-prose text-[1rem] leading-[1.55] text-ink/75">
                 Used road bikes and the bits that go on them – every one gone
-                over in the workshop and priced straight. Pick up in Melbourne
-                or Geelong, or we&apos;ll ship it.
+                over in the workshop and priced straight. Pick up in Melbourne,
+                or we&apos;ll ship it anywhere in Australia.
               </p>
             </div>
 
