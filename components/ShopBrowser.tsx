@@ -199,7 +199,7 @@ export default function ShopBrowser({ products }: { products: Product[] }) {
         </aside>
 
         {results.length > 0 ? (
-          <div className="grid grid-cols-2 self-start border-l-[1.5px] border-t-[1.5px] border-ink xl:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 self-start sm:gap-5 xl:grid-cols-3">
             {results.map((p, i) => (
               <ProductCard key={p.handle} product={p} priority={i < 2} />
             ))}

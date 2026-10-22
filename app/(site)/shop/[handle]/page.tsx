@@ -182,7 +182,7 @@ export default async function ProductPage({ params }: Params) {
                 Shop all <span aria-hidden="true">→</span>
               </Link>
             </div>
-            <div className="grid grid-cols-2 border-l-[1.5px] border-t-[1.5px] border-ink lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
               {related.map((r) => (
                 <ProductCard key={r.handle} product={r} />
               ))}

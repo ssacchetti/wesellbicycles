@@ -1,6 +1,5 @@
-// Classified-ad tile – colour photo; sold items grey out (colour on hover). Lives in a gapless grid whose parent draws the top +
-// left rules; each card draws its own right + bottom rule, so the grid
-// reads as one ruled sheet (same trick as HowItWorks' steps).
+// Classified-ad tile – colour photo; sold items grey out (colour on hover).
+// Each card draws its own full rule and sits in a gapped grid (gap-3 / sm:gap-5).
 
 import Image from "next/image";
 import Link from "next/link";
@@ -31,7 +30,7 @@ export default function ProductCard({
   ].filter(Boolean);
 
   return (
-    <article className="group relative flex flex-col border-b-[1.5px] border-r-[1.5px] border-ink bg-paper transition-colors hover:bg-accent/15">
+    <article className="group relative flex flex-col border-[1.5px] border-ink bg-paper transition-colors hover:bg-accent/15">
       <div className="relative aspect-[4/3] overflow-hidden border-b-[1.5px] border-ink bg-ink/5">
         <Image
           src={p.featuredImage.url}

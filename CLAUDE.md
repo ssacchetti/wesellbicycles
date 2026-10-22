@@ -104,7 +104,8 @@ app/
   `@layer components`, so **utilities override them** (`btn-ghost py-2` works).
 - Language: white / near-black / `#EAFF00`, 1.5px ink rules, zero radius, condensed Bricolage
   (`fontVariationSettings` wdth/opsz) for display, JetBrains Mono for labels, gapless ruled grids
-  (parent draws top+left border, cells draw right+bottom – see ProductCard / HowItWorks).
+  (parent draws top+left border, cells draw right+bottom – see HowItWorks). Product grids are the
+  exception: fully bordered cards with `gap-3 sm:gap-5`.
 - A big `.display-mega` + `.highlight` headline needs `mt-6`+ below an eyebrow, or the yellow
   strap overlaps it.
 

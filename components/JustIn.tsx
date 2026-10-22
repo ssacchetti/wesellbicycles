@@ -32,7 +32,7 @@ export default async function JustIn() {
           </header>
         </Reveal>
 
-        <div className="grid grid-cols-2 border-l-[1.5px] border-t-[1.5px] border-ink lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
           {featured.map((p, i) => (
             <ProductCard key={p.handle} product={p} priority={i < 2} />
           ))}
