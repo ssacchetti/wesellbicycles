@@ -31,7 +31,7 @@ export default async function AppleIcon() {
           lineHeight: 1,
         }}
       >
-        WB
+        WS
         <span style={{ color: "#0A0A0A" }}>.</span>
       </div>
     ),

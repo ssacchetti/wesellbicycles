@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Off the map – We Buy Bicycles",
+  title: "Off the map",
   robots: { index: false, follow: false },
 };
 
@@ -18,8 +18,8 @@ export default function NotFound() {
           This page doesn&apos;t exist. Probably never did. Head back and
           we&apos;ll point you at the right bit.
         </p>
-        <Link href="/" className="btn-primary mt-10">
-          Back to we buy bicycles
+        <Link href="/shop" className="btn-primary mt-10">
+          Back to the shop
           <span aria-hidden="true">→</span>
         </Link>
       </div>

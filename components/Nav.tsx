@@ -1,95 +1,41 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useCallback, useState } from "react";
 import { cn } from "@/lib/utils";
 import { PAUSED } from "@/lib/site-status";
+import { openCart, useCart } from "@/lib/cart";
+import { useOnDark } from "@/lib/use-on-dark";
+import { useEntered, useModal, useMounted } from "@/lib/use-transition";
 
 const links = [
-  { href: "#how-it-works", label: "How it works" },
-  { href: "#what-we-buy", label: "What we buy" },
-  { href: "#sell", label: "Sell" },
-  { href: "#faq", label: "FAQ" },
-];
-
-const mobileLinks = [
-  { href: "#how-it-works", label: "How it works" },
-  { href: "#what-we-buy", label: "What we buy" },
-  { href: "#faq", label: "FAQ" },
+  { href: "/shop", label: "Shop" },
+  { href: "/we-buy", label: "We buy bikes" },
+  { href: "/about", label: "About" },
 ];
 
 /**
  * Nav flips between dark and light treatments based on whether the section
- * beneath it is marked `data-nav-bg="dark"`. Mobile shows wordmark + a
- * prominent centered SELL button + a hamburger that opens a fullscreen
- * overlay menu. Desktop is unchanged.
+ * beneath it is marked `data-nav-bg="dark"`. Mobile shows wordmark + cart +
+ * a hamburger that opens a fullscreen overlay menu.
+ *
+ * iOS 26 Safari samples this sticky header's background for its top
+ * toolbar tint – that's why the bg swaps paper/ink rather than going
+ * translucent.
  */
 export default function Nav() {
-  const [onDark, setOnDark] = useState(false);
+  const pathname = usePathname();
+  const onDark = useOnDark(() => [0, 56], { key: pathname });
   const [menuOpen, setMenuOpen] = useState(false);
   // Keep the fullscreen overlay mounted just long enough to play its
   // fade-out, then unmount. While unmounted Safari (iOS 26) can't sample
   // its bg-ink for toolbar tinting – opacity:0 alone isn't enough there.
-  const [menuMounted, setMenuMounted] = useState(false);
+  const menuMounted = useMounted(menuOpen, 220);
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
+  useModal(menuOpen, closeMenu);
 
-  useEffect(() => {
-    if (menuOpen) {
-      setMenuMounted(true);
-      return;
-    }
-    const t = window.setTimeout(() => setMenuMounted(false), 220);
-    return () => window.clearTimeout(t);
-  }, [menuOpen]);
-
-  // Background detection (existing logic)
-  useEffect(() => {
-    const NAV_PROBE_Y = 56;
-
-    const compute = () => {
-      const sections = document.querySelectorAll('[data-nav-bg="dark"]');
-      let dark = false;
-      sections.forEach((sec) => {
-        const r = sec.getBoundingClientRect();
-        if (r.top < NAV_PROBE_Y && r.bottom > 0) dark = true;
-      });
-      setOnDark(dark);
-    };
-
-    let raf = 0;
-    const onScroll = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(compute);
-    };
-
-    compute();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      cancelAnimationFrame(raf);
-    };
-  }, []);
-
-  // Lock body scroll while the mobile menu is open
-  useEffect(() => {
-    if (menuOpen) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = prev;
-      };
-    }
-  }, [menuOpen]);
-
-  // Close the menu on Esc
-  useEffect(() => {
-    if (!menuOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMenuOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [menuOpen]);
+  const onWeBuy = pathname.startsWith("/we-buy");
 
   return (
     <>
@@ -103,9 +49,9 @@ export default function Nav() {
       >
         <div className="mx-auto flex max-w-page items-center gap-3 px-5 py-3 sm:px-8 lg:px-12">
           {/* Wordmark */}
-          <a
-            href="#top"
-            aria-label="We Buy Bicycles – home"
+          <Link
+            href="/"
+            aria-label="We Sell Bicycles – home"
             className="font-display shrink-0 text-[1.1rem] uppercase leading-none sm:text-[1.4rem]"
             style={{
               fontVariationSettings: '"wdth" 75, "opsz" 96',
@@ -113,64 +59,61 @@ export default function Nav() {
               letterSpacing: "-0.025em",
             }}
           >
-            We Buy Bicycles
+            We Sell Bicycles
             <span className="text-accent">.</span>
-          </a>
-
-          {/* Mobile hamburger – sticky CTA at the bottom of the viewport
-              handles the SELL action, so the bar stays clean. */}
-          <button
-            type="button"
-            className={cn(
-              "ml-auto flex h-10 w-10 shrink-0 items-center justify-center border-[1.5px] transition-colors md:hidden",
-              onDark
-                ? "border-paper text-paper hover:bg-paper hover:text-ink"
-                : "border-ink text-ink hover:bg-ink hover:text-paper"
-            )}
-            aria-label="Open menu"
-            aria-expanded={menuOpen}
-            aria-controls="mobile-menu"
-            onClick={() => setMenuOpen(true)}
-          >
-            <HamburgerIcon />
-          </button>
+          </Link>
 
           {/* Desktop nav */}
           <nav className="ml-auto hidden items-center gap-7 md:flex">
-            {links.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
-                className={cn(
-                  "font-mono text-[0.72rem] uppercase tracking-cap transition-colors",
-                  onDark
-                    ? "text-paper/80 hover:text-accent"
-                    : "text-ink/70 hover:text-ink"
-                )}
-              >
-                {l.label}
-              </a>
-            ))}
-            {!PAUSED && (
-              <a
-                href="#sell"
-                className={cn(
-                  "inline-flex items-center gap-2 border-[1.5px] px-3.5 py-2 text-[0.78rem] font-semibold uppercase tracking-[0.08em] transition-colors",
-                  onDark
-                    ? "border-accent bg-accent text-ink hover:bg-paper hover:border-paper"
-                    : "border-ink bg-ink text-paper hover:bg-accent hover:text-ink"
-                )}
-              >
-                Sell your bike
-              </a>
-            )}
+            {links.map((l) => {
+              const active = pathname.startsWith(l.href);
+              return (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "font-mono text-[0.72rem] uppercase tracking-cap transition-colors",
+                    "decoration-accent decoration-[3px] underline-offset-[6px]",
+                    active && "underline",
+                    onDark
+                      ? "text-paper/80 hover:text-accent"
+                      : "text-ink/70 hover:text-ink",
+                    active && (onDark ? "text-paper" : "text-ink")
+                  )}
+                >
+                  {l.label}
+                </Link>
+              );
+            })}
           </nav>
+
+          <div className="ml-auto flex items-center gap-2 md:ml-4">
+            <CartButton onDark={onDark} />
+            {/* Mobile hamburger */}
+            <button
+              type="button"
+              className={cn(
+                "flex h-10 w-10 shrink-0 items-center justify-center border-[1.5px] transition-colors md:hidden",
+                onDark
+                  ? "border-paper text-paper hover:bg-paper hover:text-ink"
+                  : "border-ink text-ink hover:bg-ink hover:text-paper"
+              )}
+              aria-label="Open menu"
+              aria-expanded={menuOpen}
+              aria-controls="mobile-menu"
+              onClick={() => setMenuOpen(true)}
+            >
+              <HamburgerIcon />
+            </button>
+          </div>
         </div>
 
-        {/* Pause status strip. Sits BELOW the wordmark row so the header's
-            top edge – what iOS 26 Safari samples for its top-bar tint –
-            keeps the usual paper/ink swap. */}
-        {PAUSED && (
+        {/* Pause status strip – only where it's relevant, on the buy page.
+            Sits BELOW the wordmark row so the header's top edge – what iOS
+            26 Safari samples for its top-bar tint – keeps the usual
+            paper/ink swap. */}
+        {PAUSED && onWeBuy && (
           <p className="border-t-[1.5px] border-ink bg-accent px-5 py-2 text-center font-mono text-[0.68rem] uppercase tracking-cap text-ink">
             <span aria-hidden="true">▮ </span>
             Paused – not buying bikes right now
@@ -180,25 +123,57 @@ export default function Nav() {
 
       {/* Mobile fullscreen menu – only mounted while opening / open / fading out */}
       {menuMounted && (
-        <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
+        <MobileMenu open={menuOpen} onClose={closeMenu} pathname={pathname} />
       )}
     </>
   );
 }
 
-function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
+function CartButton({ onDark }: { onDark: boolean }) {
+  const { count } = useCart();
+  return (
+    <button
+      type="button"
+      onClick={openCart}
+      aria-label={`Open cart, ${count} ${count === 1 ? "item" : "items"}`}
+      className={cn(
+        "relative flex h-10 items-center gap-2 border-[1.5px] px-3 transition-colors",
+        onDark
+          ? "border-paper text-paper hover:bg-paper hover:text-ink"
+          : "border-ink text-ink hover:bg-ink hover:text-paper"
+      )}
+    >
+      <BagIcon />
+      <span className="hidden font-mono text-[0.72rem] uppercase tracking-cap sm:inline">
+        Cart
+      </span>
+      <span
+        aria-hidden="true"
+        className={cn(
+          "tabular min-w-[1.4rem] px-1 text-center text-[0.72rem] leading-[1.4rem]",
+          count > 0 ? "bg-accent text-ink" : onDark ? "bg-paper/15" : "bg-ink/10"
+        )}
+      >
+        {count}
+      </span>
+    </button>
+  );
+}
+
+function MobileMenu({
+  open,
+  onClose,
+  pathname,
+}: {
+  open: boolean;
+  onClose: () => void;
+  pathname: string;
+}) {
   // `open` flips immediately when the user clicks, but on first mount the
   // CSS transition has nothing to animate from. Mirror it on the next
   // frame so opacity actually transitions 0 → 1.
-  const [entered, setEntered] = useState(false);
-  useEffect(() => {
-    if (!open) {
-      setEntered(false);
-      return;
-    }
-    const r = requestAnimationFrame(() => setEntered(true));
-    return () => cancelAnimationFrame(r);
-  }, [open]);
+  const entered = useEntered(open);
+  const items = [{ href: "/", label: "Home" }, ...links];
 
   return (
     <div
@@ -228,44 +203,66 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
       </div>
 
       <nav className="flex flex-1 flex-col justify-center gap-2 px-6 sm:px-10">
-        {mobileLinks.map((l, i) => (
-          <a
-            key={l.href}
-            href={l.href}
-            onClick={onClose}
-            className={cn(
-              "block text-[clamp(2.6rem,9vw,4rem)] transition-colors hover:text-accent",
-              entered
-                ? "translate-y-0 opacity-100"
-                : "translate-y-3 opacity-0"
-            )}
-            style={{
-              fontVariationSettings: '"wdth" 80, "opsz" 96',
-              fontWeight: 800,
-              letterSpacing: "-0.025em",
-              textTransform: "uppercase",
-              lineHeight: 1,
-              transition: `opacity 320ms cubic-bezier(.16,1,.3,1) ${
-                entered ? 80 + i * 60 : 0
-              }ms, transform 320ms cubic-bezier(.16,1,.3,1) ${
-                entered ? 80 + i * 60 : 0
-              }ms, color 180ms`,
-            }}
-          >
-            {l.label}
-          </a>
-        ))}
-        {!PAUSED && (
-          <a
-            href="#sell"
-            onClick={onClose}
-            className="mt-6 inline-flex w-fit items-center gap-2 border-[1.5px] border-accent bg-accent px-5 py-3 text-[0.95rem] font-semibold uppercase tracking-[0.08em] text-ink transition-colors hover:bg-paper hover:border-paper"
-          >
-            Sell your bike →
-          </a>
-        )}
+        {items.map((l, i) => {
+          const active = l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
+          return (
+            <Link
+              key={l.href}
+              href={l.href}
+              onClick={onClose}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "block text-[clamp(2.6rem,9vw,4rem)] transition-colors hover:text-accent",
+                active && "text-accent",
+                entered ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
+              )}
+              style={{
+                fontVariationSettings: '"wdth" 80, "opsz" 96',
+                fontWeight: 800,
+                letterSpacing: "-0.025em",
+                textTransform: "uppercase",
+                lineHeight: 1,
+                transition: `opacity 320ms cubic-bezier(.16,1,.3,1) ${
+                  entered ? 80 + i * 60 : 0
+                }ms, transform 320ms cubic-bezier(.16,1,.3,1) ${
+                  entered ? 80 + i * 60 : 0
+                }ms, color 180ms`,
+              }}
+            >
+              {l.label}
+            </Link>
+          );
+        })}
+        <button
+          type="button"
+          onClick={() => {
+            onClose();
+            openCart();
+          }}
+          className="mt-6 inline-flex w-fit items-center gap-2 border-[1.5px] border-accent bg-accent px-5 py-3 text-[0.95rem] font-semibold uppercase tracking-[0.08em] text-ink transition-colors hover:border-paper hover:bg-paper"
+        >
+          View cart →
+        </button>
       </nav>
     </div>
+  );
+}
+
+function BagIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M3.5 6.5h13l-1 11h-11l-1-11z" />
+      <path d="M7 6.5V5a3 3 0 0 1 6 0v1.5" />
+    </svg>
   );
 }
 

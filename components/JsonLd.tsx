@@ -1,123 +1,33 @@
-import { faqs } from "@/lib/faqs";
-import { PAUSED } from "@/lib/site-status";
+import { INSTAGRAM_URL, SERVICE_AREAS, SITE_NAME, SITE_URL } from "@/lib/contact";
 
-// Emits three schema.org graphs in a single <script> tag:
-//   - LocalBusiness (mobile / service-area business; no fixed trading address
-//     or phone – WhatsApp-only, by-appointment pickups across Melbourne and
-//     Geelong metros)
-//   - FAQPage     (uses the same source-of-truth FAQ list as the section)
-//   - Service     (declares "used bicycle buying" as a structured service)
+// Site-wide schema.org entity, rendered in the root layout's <head>.
+// A BicycleStore (a LocalBusiness subtype) with no fixed trading address
+// or phone – pickups are by appointment, arranged on WhatsApp. Product
+// pages emit their own Product graph; /we-buy adds FAQPage + Service
+// (components/BuyJsonLd.tsx), which point back here via @id.
 
-const SITE_URL = "https://webuybicycles.com.au";
-
-// Two geographic service areas – Melbourne metro and Geelong metro. A single
-// radius from Melbourne can't cover Geelong without also sweeping in far-north
-// suburbs we don't service, so each city gets its own GeoCircle.
-const serviceAreas = [
-  {
-    "@type": "GeoCircle",
-    geoMidpoint: {
-      "@type": "GeoCoordinates",
-      latitude: -37.8136,
-      longitude: 144.9631,
-    },
-    geoRadius: 50000,
-    description: "Greater Melbourne metropolitan area",
-  },
-  {
-    "@type": "GeoCircle",
-    geoMidpoint: {
-      "@type": "GeoCoordinates",
-      latitude: -38.1499,
-      longitude: 144.3617,
-    },
-    geoRadius: 25000,
-    description: "Greater Geelong and Bellarine area",
-  },
-];
-
-const localBusiness = {
+const store = {
   "@context": "https://schema.org",
-  "@type": "LocalBusiness",
+  "@type": "BicycleStore",
   "@id": `${SITE_URL}/#business`,
-  name: "We Buy Bicycles",
-  // While paused, drop the 24/7 claims (Google advises updating hours
-  // during a pause). Undefined keys are omitted by JSON.stringify.
-  description: PAUSED
-    ? "Cash buyers of used road bikes across the Melbourne and Geelong metros."
-    : "Cash buyers of used road bikes across the Melbourne and Geelong metros. Messages answered 24/7 on WhatsApp; pickups by appointment.",
+  name: SITE_NAME,
+  description:
+    "Used road bikes and parts, workshop-checked and priced straight. Pickup across Melbourne and Geelong or shipped Australia-wide. We also buy road bikes for cash.",
   url: SITE_URL,
   image: `${SITE_URL}/opengraph-image`,
   priceRange: "$$",
   currenciesAccepted: "AUD",
-  paymentAccepted: "Cash, Bank transfer",
-  areaServed: serviceAreas,
-  address: {
-    "@type": "PostalAddress",
-    addressRegion: "VIC",
-    addressCountry: "AU",
-  },
-  openingHoursSpecification: PAUSED ? undefined : [
-    {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-      ],
-      opens: "00:00",
-      closes: "23:59",
-    },
-  ],
-  sameAs: ["https://www.instagram.com/webuybicycles"],
-};
-
-const faqPage = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "@id": `${SITE_URL}/#faq`,
-  mainEntity: faqs.map((f) => ({
-    "@type": "Question",
-    name: f.q,
-    acceptedAnswer: {
-      "@type": "Answer",
-      text: f.a,
-    },
-  })),
-};
-
-const service = {
-  "@context": "https://schema.org",
-  "@type": "Service",
-  "@id": `${SITE_URL}/#service`,
-  name: "Used bicycle buying",
-  serviceType: "Used bicycle purchase",
-  description:
-    "We buy used road bikes, frames, and high-end components for cash. Free pickup across the Melbourne and Geelong metros.",
-  provider: { "@id": `${SITE_URL}/#business` },
-  areaServed: serviceAreas,
-  offers: {
-    "@type": "Offer",
-    description:
-      "Free assessment, fair cash offer within 12 hours, free pickup.",
-    priceCurrency: "AUD",
-  },
+  areaServed: SERVICE_AREAS,
+  address: { "@type": "PostalAddress", addressRegion: "VIC", addressCountry: "AU" },
+  sameAs: [INSTAGRAM_URL],
 };
 
 export default function JsonLd() {
-  const graph = {
-    "@context": "https://schema.org",
-    "@graph": [localBusiness, faqPage, service],
-  };
   return (
     <script
       type="application/ld+json"
-      // Schema graphs are static, server-rendered, and contain no user input.
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }}
+      // Static, server-rendered, no user input.
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(store) }}
     />
   );
 }

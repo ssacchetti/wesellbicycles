@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-// Favicon – generated at build time. Hi-vis yellow stamp with ink "WB."
+// Favicon – generated at build time. Hi-vis yellow stamp with ink "WS."
 // matches the loud-knock OG card so the site has a consistent mark.
 //
 // Size is 192px (a multiple of 48) so Google will accept it for the
@@ -35,7 +35,7 @@ export default async function Icon() {
           lineHeight: 1,
         }}
       >
-        WB
+        WS
         <span style={{ color: "#0A0A0A" }}>.</span>
       </div>
     ),

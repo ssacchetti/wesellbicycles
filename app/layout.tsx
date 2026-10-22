@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import JsonLd from "@/components/JsonLd";
+import { SITE_NAME, SITE_URL } from "@/lib/contact";
 import "./globals.css";
 
 // Single variable family for display + body. We push wght/wdth/opsz axes
@@ -20,29 +21,24 @@ const jetbrains = JetBrains_Mono({
   variable: "--font-jetbrains",
 });
 
+const DESCRIPTION =
+  "Used road bikes and parts, workshop-checked and priced straight. Pickup across Melbourne and Geelong or shipped Australia-wide. We buy bikes for cash, too.";
+
 export const metadata: Metadata = {
-  title:
-    "Sell Your Road Bike for Cash – Melbourne & Geelong | We Buy Bicycles",
-  description:
-    "Sell your used road bike for cash across Melbourne and Geelong. Message us on WhatsApp, get a fair offer in under 12 hours, pickup at your door. No haggling, no consignment.",
-  metadataBase: new URL("https://webuybicycles.com.au"),
+  title: {
+    default: "Used Road Bikes & Parts – Melbourne & Geelong | We Sell Bicycles",
+    template: "%s | We Sell Bicycles",
+  },
+  description: DESCRIPTION,
+  metadataBase: new URL(SITE_URL),
   alternates: { canonical: "/" },
   openGraph: {
-    title:
-      "Sell Your Road Bike for Cash – Melbourne & Geelong | We Buy Bicycles",
-    description:
-      "Cash on the day for road bikes across Melbourne and Geelong. WhatsApp us, get an offer in under 12 hours, pickup included.",
+    description: DESCRIPTION,
     type: "website",
-    url: "https://webuybicycles.com.au",
-    siteName: "We Buy Bicycles",
+    url: SITE_URL,
+    siteName: SITE_NAME,
   },
-  twitter: {
-    card: "summary_large_image",
-    title:
-      "Sell Your Road Bike for Cash – Melbourne & Geelong | We Buy Bicycles",
-    description:
-      "Cash on the day for road bikes across Melbourne and Geelong. WhatsApp us, get an offer in under 12 hours.",
-  },
+  twitter: { card: "summary_large_image", description: DESCRIPTION },
 };
 
 export const viewport: Viewport = {
