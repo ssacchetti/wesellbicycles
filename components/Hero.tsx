@@ -11,7 +11,7 @@
 // Swap by replacing that file or editing HERO_IMAGE.
 
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useParallax } from "@/lib/use-parallax";
 import { PAUSED } from "@/lib/site-status";
 
 const HERO_IMAGE = {
@@ -20,46 +20,9 @@ const HERO_IMAGE = {
 };
 
 export default function Hero() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const imageRef = useRef<HTMLDivElement>(null);
-  const headlineRef = useRef<HTMLHeadingElement>(null);
-  // While paused the poster is a <p>, not the <h1>, so it gets its own ref.
-  const posterRef = useRef<HTMLParagraphElement>(null);
-
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    let raf = 0;
-    const apply = () => {
-      const section = sectionRef.current;
-      const image = imageRef.current;
-      const headline = headlineRef.current ?? posterRef.current;
-      if (!section || !image || !headline) return;
-
-      const rect = section.getBoundingClientRect();
-      // Skip when the section is comfortably off-screen
-      if (rect.bottom < -200 || rect.top > window.innerHeight + 200) return;
-
-      // Image lags behind scroll – drifts downward as the page scrolls up
-      image.style.transform = `translate3d(0, ${-rect.top * 0.3}px, 0)`;
-      // Headline leads scroll – drifts upward faster than the page
-      headline.style.transform = `translate3d(0, ${rect.top * 0.1}px, 0)`;
-    };
-
-    const onScroll = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(apply);
-    };
-
-    apply();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      cancelAnimationFrame(raf);
-    };
-  }, []);
+  // Paused swaps the <h1> poster for a <p>; only one is ever mounted, so
+  // both take the same headline ref.
+  const { section: sectionRef, image: imageRef, headline: headlineRef } = useParallax();
 
   return (
     <section
@@ -110,7 +73,7 @@ export default function Hero() {
                   can run bigger on phones (26vw) and sit centred there.
                   Desktop still hits the same 11rem cap as the normal hero. */}
               <p
-                ref={posterRef}
+                ref={headlineRef}
                 className="display-mega text-center text-[clamp(3.4rem,26vw,11rem)] will-change-transform sm:text-left"
               >
                 <span className="block animate-fade-up opacity-0 [animation-delay:500ms]">
@@ -126,7 +89,7 @@ export default function Hero() {
             <div className="mt-auto border-t-[1.5px] border-ink pt-6 sm:pt-8">
               <div className="grid grid-cols-1 gap-8 sm:grid-cols-12 sm:gap-6">
                 <div className="sm:col-span-7 lg:col-span-7">
-                  <h1 className="display-tight text-[clamp(1.4rem,3vw,2.1rem)] leading-[1.05] text-ink">
+                  <h1 className="display-tight text-[clamp(1.4rem,3vw,2.1rem)] text-ink">
                     <span className="whitespace-nowrap">We Buy Bicycles</span> <Dot />{" "}
                     <span className="whitespace-nowrap">Road bikes</span> <Dot />{" "}
                     <span className="whitespace-nowrap">Melbourne &amp; Geelong</span>
@@ -174,7 +137,7 @@ export default function Hero() {
               <div className="grid grid-cols-1 gap-8 sm:grid-cols-12 sm:gap-6">
                 {/* Scope strap */}
                 <div className="sm:col-span-7 lg:col-span-7">
-                  <p className="display-tight text-[clamp(1.4rem,3vw,2.1rem)] leading-[1.05] text-ink">
+                  <p className="display-tight text-[clamp(1.4rem,3vw,2.1rem)] text-ink">
                     <span className="whitespace-nowrap">Road bikes</span> <Dot />{" "}
                     <span className="whitespace-nowrap">Any era</span> <Dot />{" "}
                     <span className="whitespace-nowrap">Any condition</span>

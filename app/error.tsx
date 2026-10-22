@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { PAUSED } from "@/lib/site-status";
+import { WHATSAPP_NUMBER } from "@/lib/contact";
 
 export default function Error({
   reset,
@@ -23,7 +24,7 @@ export default function Error({
             <>
               Try reloading. If that&apos;s no use,{" "}
               <a
-                href="https://wa.me/61422880536"
+                href={`https://wa.me/${WHATSAPP_NUMBER}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="underline decoration-accent decoration-[3px] underline-offset-4 hover:text-accent"

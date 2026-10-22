@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useOnDark } from "@/lib/use-on-dark";
+import { useMounted } from "@/lib/use-transition";
 import { track } from "@vercel/analytics";
 import { PAUSED } from "@/lib/site-status";
 
@@ -27,66 +29,28 @@ import { PAUSED } from "@/lib/site-status";
  */
 export default function StickyMobileCTA() {
   const [show, setShow] = useState(false);
-  const [onDark, setOnDark] = useState(false);
-  // Keeps the element mounted long enough for the slide-out transition
-  // to play before we actually remove it from the DOM.
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    // Vertical band the pill occupies on screen – roughly the bottom
-    // ~80px above the home indicator. We test if any dark section
-    // currently overlaps this band.
-    const PILL_BAND_HEIGHT = 80;
-
-    const compute = () => {
-      const form = document.getElementById("sell");
-      let nextShow: boolean;
-      if (!form) {
-        nextShow = window.scrollY > 320;
-      } else {
-        const rect = form.getBoundingClientRect();
-        const formInView =
-          rect.top < window.innerHeight - 80 && rect.bottom > 120;
-        nextShow = window.scrollY > 320 && !formInView;
-      }
-      setShow(nextShow);
-
-      const bandTop = window.innerHeight - PILL_BAND_HEIGHT;
-      const bandBottom = window.innerHeight;
-      let dark = false;
-      document.querySelectorAll('[data-nav-bg="dark"]').forEach((sec) => {
-        const r = (sec as HTMLElement).getBoundingClientRect();
-        if (r.top < bandBottom && r.bottom > bandTop) dark = true;
-      });
-      setOnDark(dark);
-    };
-
-    let raf = 0;
-    const onScroll = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(compute);
-    };
-
-    compute();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      cancelAnimationFrame(raf);
-    };
-  }, []);
-
-  // Mount/unmount around the visibility state so Safari can't sample the
-  // pill while it's offscreen.
-  useEffect(() => {
-    if (show) {
-      setMounted(true);
-      return;
+  // Vertical band the pill occupies on screen – roughly the bottom ~80px
+  // above the home indicator. Over a dark section the pill flips colour.
+  const PILL_BAND_HEIGHT = 80;
+  const onDark = useOnDark(
+    () => [window.innerHeight - PILL_BAND_HEIGHT, window.innerHeight],
+    {
+      onCompute: () => {
+        const form = document.getElementById("sell");
+        let nextShow = window.scrollY > 320;
+        if (form) {
+          const rect = form.getBoundingClientRect();
+          const formInView =
+            rect.top < window.innerHeight - 80 && rect.bottom > 120;
+          nextShow = nextShow && !formInView;
+        }
+        setShow(nextShow);
+      },
     }
-    const t = window.setTimeout(() => setMounted(false), 320);
-    return () => window.clearTimeout(t);
-  }, [show]);
+  );
+  // Mount/unmount around the visibility state so Safari can't sample the
+  // pill while it's offscreen; keeps it long enough for the slide-out.
+  const mounted = useMounted(show, 320);
 
   // Nothing to sell while paused – render nothing, so there's also no fixed
   // element for iOS Safari to sample.

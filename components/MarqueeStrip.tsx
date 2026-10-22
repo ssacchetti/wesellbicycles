@@ -1,7 +1,7 @@
 // Black ticker tape – runs beneath the hero like a SALE banner.
 // CSS-only, pauses for reduced motion.
 
-const items = [
+const BUY_ITEMS = [
   "Cash on the day",
   "Road bikes",
   "Any condition",
@@ -11,7 +11,7 @@ const items = [
   "No middlemen",
 ];
 
-export default function MarqueeStrip() {
+export default function MarqueeStrip({ items = BUY_ITEMS }: { items?: string[] }) {
   // Duplicate the list a few times for seamless loop on wide screens.
   const loop = [...items, ...items, ...items];
 
@@ -25,7 +25,7 @@ export default function MarqueeStrip() {
         {loop.map((label, i) => (
           <span
             key={i}
-            className="flex shrink-0 items-center gap-5 px-5 font-display text-[1.05rem] uppercase tracking-tight sm:text-[1.2rem]"
+            className="flex shrink-0 items-center gap-5 px-5 font-display text-[1.05rem] uppercase sm:text-[1.2rem]"
             style={{ fontVariationSettings: '"wdth" 80, "opsz" 96', fontWeight: 700 }}
           >
             <span className="text-accent">★</span>

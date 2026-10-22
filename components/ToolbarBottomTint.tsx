@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useOnDark } from "@/lib/use-on-dark";
 
 /**
  * Deterministic anchor for iOS Safari's bottom URL-bar tint.
@@ -27,35 +28,11 @@ import { useEffect, useState } from "react";
  * `data-nav-bg` convention; Safari samples the Nav directly.
  */
 export default function ToolbarBottomTint() {
-  const [overDark, setOverDark] = useState(false);
-
-  useEffect(() => {
-    const compute = () => {
-      const h = window.innerHeight;
-      const sections = document.querySelectorAll('[data-nav-bg="dark"]');
-      let dark = false;
-      sections.forEach((sec) => {
-        const r = (sec as HTMLElement).getBoundingClientRect();
-        if (r.top < h && r.bottom > h - 8) dark = true;
-      });
-      setOverDark(dark);
-    };
-
-    let raf = 0;
-    const onScroll = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(compute);
-    };
-
-    compute();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      cancelAnimationFrame(raf);
-    };
-  }, []);
+  const pathname = usePathname();
+  const overDark = useOnDark(
+    () => [window.innerHeight - 8, window.innerHeight],
+    { key: pathname }
+  );
 
   return (
     <div

@@ -4,13 +4,10 @@ import { useMemo, useState, type FormEvent } from "react";
 import { track } from "@vercel/analytics";
 import { cn } from "@/lib/utils";
 import Reveal from "@/components/Reveal";
+import { Field, Req, SelectField } from "@/components/FormFields";
 import { PAUSED } from "@/lib/site-status";
+import { WHATSAPP_NUMBER } from "@/lib/contact";
 
-/* -------------------------------------------------------------------------- */
-/*  CONFIG – live WhatsApp number. Also hardcoded in app/error.tsx.            */
-/*  Use international format with no '+', spaces, or hyphens. e.g. 27821234567 */
-/* -------------------------------------------------------------------------- */
-const WHATSAPP_NUMBER = "61422880536";
 
 /* -------------------------------------------------------------------------- */
 /*  Field options                                                              */
@@ -503,17 +500,6 @@ function ArrowRight() {
 /*  Small subcomponents                                                         */
 /* -------------------------------------------------------------------------- */
 
-function Req() {
-  return (
-    <span
-      aria-hidden="true"
-      className="ml-1 inline-block bg-accent px-[0.35em] text-ink"
-    >
-      ✱
-    </span>
-  );
-}
-
 function ErrorLine({ error }: { error?: string }) {
   return (
     <p
@@ -523,115 +509,6 @@ function ErrorLine({ error }: { error?: string }) {
     >
       {error ?? " "}
     </p>
-  );
-}
-
-function Field({
-  id,
-  label,
-  required,
-  error,
-  value,
-  onChange,
-  placeholder,
-  autoComplete,
-  autoCapitalize,
-  spellCheck,
-  inputMode,
-}: {
-  id: string;
-  label: string;
-  required?: boolean;
-  error?: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  autoComplete?: string;
-  autoCapitalize?: "off" | "none" | "on" | "sentences" | "words" | "characters";
-  spellCheck?: boolean;
-  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
-}) {
-  return (
-    <div className={cn(error && "field-has-error")}>
-      <label htmlFor={id} className="field-label">
-        {label} {required && <Req />}
-      </label>
-      <input
-        id={id}
-        type="text"
-        className="field-input"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        aria-invalid={Boolean(error)}
-        aria-describedby={error ? `${id}-err` : undefined}
-        autoComplete={autoComplete}
-        autoCapitalize={autoCapitalize}
-        spellCheck={spellCheck}
-        inputMode={inputMode}
-      />
-      <p
-        id={`${id}-err`}
-        className="field-error"
-        data-show={Boolean(error)}
-        role={error ? "alert" : undefined}
-      >
-        {error ?? " "}
-      </p>
-    </div>
-  );
-}
-
-function SelectField({
-  id,
-  label,
-  required,
-  error,
-  value,
-  onChange,
-  options,
-  placeholder,
-}: {
-  id: string;
-  label: string;
-  required?: boolean;
-  error?: string;
-  value: string;
-  onChange: (v: string) => void;
-  options: string[];
-  placeholder?: string;
-}) {
-  return (
-    <div className={cn(error && "field-has-error")}>
-      <label htmlFor={id} className="field-label">
-        {label} {required && <Req />}
-      </label>
-      <select
-        id={id}
-        className="field-select"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        aria-invalid={Boolean(error)}
-        aria-describedby={error ? `${id}-err` : undefined}
-      >
-        <option value="" disabled>
-          {placeholder ?? "Choose…"}
-        </option>
-        {options.map((opt) => (
-          <option key={opt} value={opt}>
-            {opt}
-          </option>
-        ))}
-      </select>
-      <p
-        id={`${id}-err`}
-        className="field-error"
-        data-show={Boolean(error)}
-        role={error ? "alert" : undefined}
-      >
-        {error ?? " "}
-      </p>
-    </div>
   );
 }
 
