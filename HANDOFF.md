@@ -1,7 +1,8 @@
 # HANDOFF – start here
 
-Last updated **2026-10-22** (end of session 1). Read this, then `CLAUDE.md` (conventions +
-gotchas), then `ARCHITECTURE.md`.
+Last updated **2026-10-23** (session 2). Read this, then `CLAUDE.md` (conventions +
+gotchas), then `ARCHITECTURE.md`. **Before writing Next.js code, read the bundled guides in
+`node_modules/next/dist/docs/`** – Next 16 differs from what you know (see `AGENTS.md`).
 
 ## TL;DR
 
@@ -9,8 +10,7 @@ gotchas), then `ARCHITECTURE.md`.
   confirmation, about) plus the original buy site at `/we-buy`. Same hi-vis design as before.
 - **Mock data only.** No Shopify yet, no payments. All 14 products are invented.
 - **Live preview:** https://wesellbicycles.vercel.app – auto-deploys on every push to `main`.
-- **Repo:** https://github.com/ssacchetti/wesellbicycles (public). In sync with GitHub except
-  this rewritten HANDOFF.md, left uncommitted at end of session 1 – commit it with the next change.
+- **Repo:** https://github.com/ssacchetti/wesellbicycles (public). Fully in sync with GitHub.
 - **Next big job:** wire up Shopify (plan below). Smaller open items further down.
 
 ## Where everything lives
@@ -28,6 +28,9 @@ collaboration for private repositories"). Public fixed it.
 - Going private later is fine **if nothing else needs pushing**: the live deployment keeps
   serving. New pushes by bwarren85 would be blocked; the owner can still Redeploy / Create
   Deployment from the Vercel dashboard.
+- **If a push gets blocked** (repo was private at the time): make it public again, then push an
+  empty commit (`git commit --allow-empty -m "Trigger Vercel deploy" && git push`). Vercel
+  doesn't retry a blocked deploy on its own. This happened once in session 2 (`3b3735b`).
 - Before real orders: move to **Vercel Pro** (Hobby is non-commercial only). Pro + adding
   bwarren85 as a member also makes private-repo pushes deploy.
 
@@ -38,6 +41,9 @@ npm run dev     # note: port 3000 was taken by something else last session – d
 npm run build   # 29 static routes; product pages prerendered
 npm run lint    # clean
 ```
+
+`next dev` writes/re-creates `AGENTS.md` (a managed "read the bundled Next docs" block). It's
+committed – leave it in, deleting it just brings it back as an uncommitted change.
 
 After replacing an image file under the same name, clear the image caches or you'll see the
 old one: `rm -rf .next/dev/cache/images .next/cache/images`, restart dev, hard-refresh.
@@ -55,7 +61,9 @@ old one: `rm -rf .next/dev/cache/images .next/cache/images`, restart dev, hard-r
 | `/we-buy` | The original buy site, unchanged, WhatsApp form live (`PAUSED = false`) |
 | `/about` | Story, service areas, contact – **placeholder copy** |
 
-## Everything changed this session (git log, oldest first)
+## Change log (git log, oldest first)
+
+**Session 1 (2026-10-22)**
 
 1. `6bca073` **Stack upgrade** – Next 14 → 16.4, React 19, Tailwind 3 → 4.3 (`@theme` in
    `globals.css`, no tailwind.config), ESLint 9. Fixed: faded colours (`text-ink/70` etc. never
@@ -75,7 +83,15 @@ old one: `rm -rf .next/dev/cache/images .next/cache/images`, restart dev, hard-r
    to the top on navigation (logo used to land mid-page in Safari).
 9. `669c7df` **Melbourne-only pickup** for shop orders. Buy side still covers Melbourne + Geelong.
 10. `906168f` **Checkout logo → home**, plus "← Cart" link.
-11. `c4c3b1d` + this file – repo/Vercel notes.
+11. `c4c3b1d` + `ca9a4e1` – repo/Vercel notes, this file.
+
+**Session 2 (2026-10-23)**
+
+12. `600c94f` **Spaced-out product tiles** – cards draw their own full border in a `gap-3 sm:gap-5`
+    grid (shop, "You might also like", home "Just in"). Other ruled grids (HowItWorks etc.) stay
+    gapless.
+13. `959fe6e` **`AGENTS.md`** committed (written by `next dev`).
+14. `3b3735b` Empty commit to re-trigger Vercel after a blocked deploy.
 
 Verified along the way with headless Chrome (puppeteer-core in the session scratchpad – not
 kept): full purchase flow at 1440px and 390px with no page errors, no overflow at 320px,
