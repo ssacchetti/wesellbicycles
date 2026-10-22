@@ -1,79 +1,116 @@
 # HANDOFF – start here
 
-Updated 2026-10-22. Read this, then CLAUDE.md (conventions + gotchas), then ARCHITECTURE.md.
+Last updated **2026-10-22** (end of session 1). Read this, then `CLAUDE.md` (conventions +
+gotchas), then `ARCHITECTURE.md`.
 
-## Where this folder came from
+## TL;DR
 
-- A copy of `~/Developer/webuybicycles` (the live webuybicycles.com.au), made 2026-10-22 for a
-  rebuild. **Never modify `~/Developer/webuybicycles`** – it's still the production source.
-- Full git history, `origin` removed, no `.vercel/`. Nothing pushes or deploys from here.
+- **We Sell Bicycles** – a multi-page shop mockup (home, shop, product, cart, checkout,
+  confirmation, about) plus the original buy site at `/we-buy`. Same hi-vis design as before.
+- **Mock data only.** No Shopify yet, no payments. All 14 products are invented.
+- **Live preview:** https://wesellbicycles.vercel.app – auto-deploys on every push to `main`.
+- **Repo:** https://github.com/ssacchetti/wesellbicycles (public). In sync with GitHub except
+  this rewritten HANDOFF.md, left uncommitted at end of session 1 – commit it with the next change.
+- **Next big job:** wire up Shopify (plan below). Smaller open items further down.
 
-## What's been built (2026-10-22 session)
+## Where everything lives
 
-A complete **front-end mockup** of the new multi-page **We Sell Bicycles** site, in the original
-design language, on mock data:
+| What | Where |
+| --- | --- |
+| This project | `~/Developer/wesellbicycles` |
+| GitHub | `ssacchetti/wesellbicycles` – **public**. `ssacchetti` = the client's personal account; you push as collaborator **bwarren85** (`gh` CLI logged in, HTTPS). Repo-local git identity `bwarren85 <bwarren85@icloud.com>`; no global git identity is set on this Mac. |
+| Vercel | Project `we-buy-bicycles-projects/wesellbicycles`, client's **Hobby** plan. Share `wesellbicycles.vercel.app`; `…-git-main-…vercel.app` links sit behind Vercel login. |
+| Live old site | `ssacchetti/webuybicycles` / `~/Developer/webuybicycles` → webuybicycles.com.au. **Never touch it.** |
+
+**Why the repo is public:** Vercel Hobby blocks deploys of commits by anyone other than the
+account owner on *private* repos ("Deployment Blocked … Hobby Plan does not support
+collaboration for private repositories"). Public fixed it.
+- Going private later is fine **if nothing else needs pushing**: the live deployment keeps
+  serving. New pushes by bwarren85 would be blocked; the owner can still Redeploy / Create
+  Deployment from the Vercel dashboard.
+- Before real orders: move to **Vercel Pro** (Hobby is non-commercial only). Pro + adding
+  bwarren85 as a member also makes private-repo pushes deploy.
+
+## Running it
+
+```bash
+npm run dev     # note: port 3000 was taken by something else last session – dev ran on 3001
+npm run build   # 29 static routes; product pages prerendered
+npm run lint    # clean
+```
+
+After replacing an image file under the same name, clear the image caches or you'll see the
+old one: `rm -rf .next/dev/cache/images .next/cache/images`, restart dev, hard-refresh.
+
+## What's built
 
 | Route | What |
 | --- | --- |
-| `/` | Home – "We Sell Bicycles." poster hero, shop marquee, Just in grid, category index, workshop/grades section, "we buy too" band |
-| `/shop` | Listing – category tabs, filters (size, condition, price, brand, in stock), sort, URL state, mobile filter sheet |
-| `/shop/[handle]` | Product – gallery, grade, size variants, add to cart, mobile sticky add bar, spec sheet, workshop note, related |
-| `/cart` + drawer | Cart drawer (opens on add / nav button) and full cart page |
-| `/checkout` | Mock checkout styled to map onto Shopify's: contact → delivery (ship / pickup Melbourne) → address → payment, summary, validation |
-| `/checkout/confirmation` | "Sorted." + receipt |
-| `/we-buy` | The original site, unchanged, form live |
-| `/about` | Story / service areas / contact (**placeholder copy**) |
+| `/` | "We Sell Bicycles." poster hero (parallax), shop marquee, Just in grid, category index, workshop/grades (dark), "we buy too" yellow band |
+| `/shop` | Category tabs, filters (size, condition, price, brand, in stock), sort; state in the URL; mobile filter sheet; 2-up tiles on phones |
+| `/shop/[handle]` | Gallery, A/B/C grade, size variants, add to cart + mobile sticky add bar, spec sheet, workshop note, related, Product JSON-LD |
+| `/cart` + drawer | Slide-out drawer (opens on add / nav button) and full cart page |
+| `/checkout` | Mock, laid out like Shopify's: contact → delivery (**Ship it / Pick up Melbourne**) → address → payment; summary; validation. Banner says no payment is taken. Header: logo → home, "← Cart" link |
+| `/checkout/confirmation` | "Sorted." + receipt (sessionStorage mock order) |
+| `/we-buy` | The original buy site, unchanged, WhatsApp form live (`PAUSED = false`) |
+| `/about` | Story, service areas, contact – **placeholder copy** |
 
-Also done:
-- **Stack upgraded**: Next 14 → 16.4, React 18 → 19, Tailwind 3 → 4.3 (CSS-first `@theme`),
-  ESLint 9 flat config installed (`npm run lint` is clean).
-- **Fixed** the old review findings: faded colours (`text-ink/70` etc.) now render; the FAQ
-  accordion animates; `scroll-padding-top` clears the paused nav strip.
-- **Shared hooks** replaced the three copy-pasted `data-nav-bg` loops and the overlay mount logic.
-- `PAUSED` set to **false** (the buy page shows the live form); toggling it still hides every
-  buy-side CTA site-wide – verified.
-- Rebrand bits: OG image / favicons say "We Sell", JSON-LD is a `BicycleStore` plus FAQ/Service
-  on `/we-buy`, sitemap includes all products, robots disallows `/cart` + `/checkout`.
+## Everything changed this session (git log, oldest first)
 
-Verified: `npm run build` (29 static routes), lint clean, full purchase flow scripted in headless
-Chrome at 1440px and 390px with no page errors, no horizontal overflow at 320px, reduced motion
-disables marquee + parallax. Screenshot/flow scripts lived in the session scratchpad
-(puppeteer-core + system Chrome) – not committed.
+1. `6bca073` **Stack upgrade** – Next 14 → 16.4, React 19, Tailwind 3 → 4.3 (`@theme` in
+   `globals.css`, no tailwind.config), ESLint 9. Fixed: faded colours (`text-ink/70` etc. never
+   rendered on TW3), FAQ accordion animation, scroll padding under the paused nav strip.
+   `next.config.mjs` lists `images.qualities` – Next 16 otherwise forces quality 75.
+2. `c600a3d` **Shared hooks/config** – `useOnDark`, `useMounted/useEntered/useModal`,
+   `useParallax`, `FormFields`, `lib/contact.ts`.
+3. `0f20a14` **Data layer** – `lib/product.ts` (types/helpers, client-safe), `lib/shop.ts`
+   (server-only swap point), `lib/catalogue.ts` (mock), `lib/cart.ts` (store), photos.
+4. `cd8e257` **Pages** – home, shop, product, cart, about, /we-buy move, Nav/Footer, rebrand
+   (OG, favicons "WS", JSON-LD, sitemap, robots).
+5. `e052d44` **Checkout + confirmation.**
+6. `acadd71` **Docs rewrite.**
+7. *(part of 3–4)* **Product images in colour** – in-stock tiles/gallery/cart show colour;
+   **sold** items are greyscale + faded and colourise on hover. Hero photos stay greyscale.
+8. `3afb932` **Page-change scroll fix** – `<html data-scroll-behavior="smooth">` so Next jumps
+   to the top on navigation (logo used to land mid-page in Safari).
+9. `669c7df` **Melbourne-only pickup** for shop orders. Buy side still covers Melbourne + Geelong.
+10. `906168f` **Checkout logo → home**, plus "← Cart" link.
+11. `c4c3b1d` + this file – repo/Vercel notes.
 
-All of the above is committed on local `main` in six commits after `794e97b` (stack upgrade →
-shared hooks → data layer → pages → checkout → docs). Only the last is verified to build on its
-own. Pushed to `ssacchetti/wesellbicycles` (see step 5 below for the Vercel situation).
+Verified along the way with headless Chrome (puppeteer-core in the session scratchpad – not
+kept): full purchase flow at 1440px and 390px with no page errors, no overflow at 320px,
+reduced motion respected, PAUSED on/off hides/shows every buy-side CTA.
 
-## Not real yet / placeholders
+## Placeholders – not real yet
 
-- **All products** (`lib/catalogue.ts`) – names, specs, prices, grades, workshop notes invented.
-- **Photos** – Unsplash (free licence), shown in colour; sold items greyed (colour on hover); source IDs listed in `lib/catalogue.ts`.
-  Bike galleries reuse part photos as "detail" shots.
-- **Checkout** takes no payment; shipping rates (`SHIPPING` in `lib/product.ts`: $29 parts,
-  $99 boxed bike) and the "7-day returns" line are made up.
-- **About page copy**, "New stock weekly", pickup-by-appointment wording – need confirming.
-- `INSTAGRAM_URL` still points at `@webuybicycles`; `SITE_URL` assumes `wesellbicycles.com.au`.
+- **Products** (`lib/catalogue.ts`): names, specs, prices, grades, workshop notes – invented.
+- **Photos**: Unsplash (free licence), IDs at top of `lib/catalogue.ts`. Bike galleries reuse part
+  photos as "detail" shots. Four are nearly colourless even in colour (Acelane frameset, Zipp
+  bars, SRAM crankset, Giant Contend) – optional swap for livelier shots.
+- **Shipping** (`SHIPPING` in `lib/product.ts`): $29 parts, $99 when the cart has a whole bike,
+  free Melbourne pickup. Framesets currently get **$29** (they're not "Bikes") – user agreed that's
+  wrong-ish but parked it; real rates TBD.
+- **Copy**: About page, "7-day returns", "New stock weekly", pickup-by-appointment wording.
+- `INSTAGRAM_URL` still `@webuybicycles`; `SITE_URL` assumes `wesellbicycles.com.au` (no domain yet).
 
 ## Next: wiring Shopify
 
-1. Create/confirm the Shopify store; get a **Storefront API** public token. Add env vars
-   (`SHOPIFY_STORE_DOMAIN`, `SHOPIFY_STOREFRONT_TOKEN`).
-2. Products: implement `lib/shop.ts` functions with Storefront GraphQL (`products`, `product(handle)`),
-   map to the existing `Product` type. Grade / year / specs / workshop note → **metafields**
-   (`custom.condition_grade` etc.). Add `revalidate` (ISR) or on-demand revalidation via a Shopify
-   webhook route. Drop `dynamicParams = false` once handles come from Shopify.
-3. Cart: back `lib/cart.ts` with `cartCreate` / `cartLinesAdd` / `cartLinesUpdate` (keep the cart
-   id in localStorage instead of lines); `checkoutHref()` returns `cart.checkoutUrl`.
-4. Checkout: **Shopify-hosted**. Use `/checkout` + `/checkout/confirmation` as the visual spec in
-   Shopify's checkout branding settings (colours, fonts, 0 radius), then delete both routes.
-5. ~~GitHub repo~~ done: `ssacchetti/wesellbicycles` (**public**, like `webuybicycles`). Vercel
-   project `we-buy-bicycles-projects/wesellbicycles` on the client's **Hobby** plan; pushes to
-   `main` auto-deploy. (While the repo was private, pushes by `bwarren85` were "Deployment
-   Blocked" – Hobby doesn't allow collaborators on private repos; making it public fixed that.)
-   Before launch: move to Pro anyway – Hobby is for non-commercial use.
+1. Client creates/confirms the Shopify store; get a **Storefront API** public token. Env vars
+   (`SHOPIFY_STORE_DOMAIN`, `SHOPIFY_STOREFRONT_TOKEN`) – locally in `.env.local`, and in Vercel.
+2. Products: implement the functions in `lib/shop.ts` with Storefront GraphQL, mapped to the
+   existing `Product` type. Grade / year / specs / workshop note → **metafields**
+   (e.g. `custom.condition_grade`). Keep product updates deploy-free: ISR `revalidate` and/or a
+   Shopify webhook → on-demand revalidation route. Drop `dynamicParams = false`.
+3. Cart: back `lib/cart.ts` with `cartCreate` / `cartLinesAdd` / `cartLinesUpdate` (store the cart
+   id, not lines); `checkoutHref()` returns `cart.checkoutUrl`.
+4. Checkout: **Shopify-hosted**. Use `/checkout` + `/checkout/confirmation` as the visual spec for
+   Shopify's checkout branding (colours, fonts, zero radius), then delete both routes.
 
 ## Open decisions for the user
 
-- Final brand handle/domain, Instagram.
-- Real shipping rates, returns policy, pickup process.
-- Whether the general WhatsApp contact should also hide while `PAUSED` (currently it stays).
+- Real shipping rates (incl. framesets / wheelsets), returns policy, pickup process.
+- Brand handle + domain, Instagram.
+- Whether general WhatsApp contact should also hide while `PAUSED` (currently stays visible –
+  shop customers need it; PAUSED only gates the buy side now).
+- Swap the four dull product photos? (optional, mockup only)
+- Vercel Pro timing (needed before taking real orders).
