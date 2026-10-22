@@ -58,6 +58,11 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${bricolage.variable} ${jetbrains.variable}`}
+      // globals.css sets `scroll-behavior: smooth` for in-page anchors. This
+      // tells Next 16 to switch it off during route changes, so navigating
+      // (e.g. the logo → home) jumps straight to the top instead of
+      // animating the scroll – which Safari could cut short part way down.
+      data-scroll-behavior="smooth"
     >
       <head>
         <JsonLd />
