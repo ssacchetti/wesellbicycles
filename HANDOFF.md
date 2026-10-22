@@ -42,7 +42,7 @@ disables marquee + parallax. Screenshot/flow scripts lived in the session scratc
 
 All of the above is committed on local `main` in six commits after `794e97b` (stack upgrade →
 shared hooks → data layer → pages → checkout → docs). Only the last is verified to build on its
-own. **No remote yet** – next step is a new GitHub repo.
+own. Pushed to `ssacchetti/wesellbicycles` (see step 5 below for the Vercel situation).
 
 ## Not real yet / placeholders
 
@@ -66,7 +66,11 @@ own. **No remote yet** – next step is a new GitHub repo.
    id in localStorage instead of lines); `checkoutHref()` returns `cart.checkoutUrl`.
 4. Checkout: **Shopify-hosted**. Use `/checkout` + `/checkout/confirmation` as the visual spec in
    Shopify's checkout branding settings (colours, fonts, 0 radius), then delete both routes.
-5. Create a new GitHub repo, add it as `origin`, push `main`; then a Vercel project and domain.
+5. ~~GitHub repo~~ done: `ssacchetti/wesellbicycles` (**public**, like `webuybicycles`). Vercel
+   project `we-buy-bicycles-projects/wesellbicycles` on the client's **Hobby** plan; pushes to
+   `main` auto-deploy. (While the repo was private, pushes by `bwarren85` were "Deployment
+   Blocked" – Hobby doesn't allow collaborators on private repos; making it public fixed that.)
+   Before launch: move to Pro anyway – Hobby is for non-commercial use.
 
 ## Open decisions for the user
 
